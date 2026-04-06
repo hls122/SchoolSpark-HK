@@ -1,0 +1,3226 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SchoolSpark HK">
+  <title>SchoolSpark HK</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    html {
+      font-size: 15px;
+    }
+    html.font-size-large {
+      font-size: 16px;
+    }
+    html.font-size-xlarge {
+      font-size: 18px;
+    }
+    .font-size-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.75rem;
+      background: #ffffff;
+    }
+    .font-size-label {
+      color: #475569;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0 0.35rem;
+    }
+    .font-size-option {
+      min-width: 2.25rem;
+      padding: 0.45rem 0.55rem;
+      border: none;
+      border-radius: 0.55rem;
+      background: transparent;
+      color: #334155;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.18s ease, color 0.18s ease;
+    }
+    .font-size-option:hover {
+      background: #e2e8f0;
+    }
+    .font-size-option.is-active {
+      background: #0f172a;
+      color: #ffffff;
+    }
+    .view-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.75rem;
+      background: #f8fafc;
+    }
+    .view-toggle-btn {
+      border: none;
+      background: transparent;
+      color: #334155;
+      padding: 0.55rem 0.9rem;
+      border-radius: 0.6rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s ease, color 0.18s ease;
+    }
+    .view-toggle-btn.is-active {
+      background: #0f172a;
+      color: #ffffff;
+    }
+    .browse-map {
+      height: 560px;
+    }
+    .school-pin {
+      width: 18px;
+      height: 18px;
+      display: block;
+      border-radius: 9999px;
+      border: 2px solid #ffffff;
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18);
+      position: relative;
+    }
+    .school-pin::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: -5px;
+      width: 8px;
+      height: 8px;
+      background: inherit;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+      transform: translateX(-50%) rotate(45deg);
+    }
+    .map-preview-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .map-preview-meta {
+      font-size: 0.78rem;
+      color: #475569;
+    }
+    .map-preview-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      border: none;
+      border-radius: 0.6rem;
+      background: #2563eb;
+      color: #ffffff;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    body {
+      font-family: "Segoe UI", Inter, Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+    body.dark {
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    .hero-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+    }
+    body.dark .hero-banner {
+      background: linear-gradient(135deg, #020617 0%, #1e3a8a 100%);
+    }
+    .panel {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    body.dark .panel {
+      background: #111827;
+      border-color: #334155;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+    }
+    .input-control {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.75rem;
+      padding: 0.8rem 0.9rem;
+      background: #fff;
+      transition: all 0.2s ease;
+    }
+    body.dark .input-control {
+      background: #0f172a;
+      border-color: #475569;
+      color: #e5e7eb;
+    }
+    body.dark .input-control::placeholder {
+      color: #94a3b8;
+    }
+    .input-control:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .school-title {
+      font-size: 1.55rem;
+      line-height: 1.15;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+    .school-subtitle {
+      font-size: 1.05rem;
+      line-height: 1.35;
+      font-weight: 700;
+      color: #334155;
+    }
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1.1;
+    }
+    .type-badge-blue {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    .type-badge-purple {
+      background: #ede9fe;
+      color: #7c3aed;
+    }
+    .type-badge-orange {
+      background: #ffedd5;
+      color: #ea580c;
+    }
+    .type-badge-green {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .type-badge-rose {
+      background: #ffe4e6;
+      color: #e11d48;
+    }
+    .type-badge-slate {
+      background: #e2e8f0;
+      color: #334155;
+    }
+    .quick-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 9999px;
+      border: 1px solid transparent;
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 1.1;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+    .quick-tag-sky { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
+    .quick-tag-indigo { background: #e0e7ff; color: #4338ca; border-color: #a5b4fc; }
+    .quick-tag-emerald { background: #dcfce7; color: #047857; border-color: #86efac; }
+    .quick-tag-amber { background: #fef3c7; color: #b45309; border-color: #fcd34d; }
+    .quick-tag-teal { background: #ccfbf1; color: #0f766e; border-color: #5eead4; }
+    .quick-tag-rose { background: #ffe4e6; color: #be123c; border-color: #fda4af; }
+    .quick-tag-orange { background: #ffedd5; color: #c2410c; border-color: #fdba74; }
+    .quick-tag-slate { background: #e2e8f0; color: #334155; border-color: #cbd5e1; }
+    body.dark .meta-pill {
+      background: rgba(59, 130, 246, 0.18);
+      color: #bfdbfe;
+    }
+    body.dark .school-title {
+      color: #f8fafc;
+    }
+    body.dark .school-subtitle {
+      color: #e2e8f0;
+    }
+    body.dark .type-badge-blue {
+      background: rgba(59, 130, 246, 0.2);
+      color: #dbeafe;
+    }
+    body.dark .type-badge-purple {
+      background: rgba(139, 92, 246, 0.22);
+      color: #ede9fe;
+    }
+    body.dark .type-badge-orange {
+      background: rgba(249, 115, 22, 0.22);
+      color: #ffedd5;
+    }
+    body.dark .type-badge-green {
+      background: rgba(34, 197, 94, 0.22);
+      color: #dcfce7;
+    }
+    body.dark .type-badge-rose {
+      background: rgba(244, 63, 94, 0.2);
+      color: #ffe4e6;
+    }
+    body.dark .type-badge-slate {
+      background: rgba(148, 163, 184, 0.22);
+      color: #f1f5f9;
+    }
+    body.dark .quick-tag-sky { background: rgba(14, 165, 233, 0.18); color: #e0f2fe; }
+    body.dark .quick-tag-indigo { background: rgba(99, 102, 241, 0.2); color: #e0e7ff; }
+    body.dark .quick-tag-emerald { background: rgba(16, 185, 129, 0.18); color: #d1fae5; }
+    body.dark .quick-tag-amber { background: rgba(245, 158, 11, 0.2); color: #fef3c7; }
+    body.dark .quick-tag-teal { background: rgba(20, 184, 166, 0.2); color: #ccfbf1; }
+    body.dark .quick-tag-rose { background: rgba(244, 63, 94, 0.18); color: #ffe4e6; }
+    body.dark .quick-tag-orange { background: rgba(249, 115, 22, 0.18); color: #ffedd5; }
+    body.dark .quick-tag-slate { background: rgba(148, 163, 184, 0.18); color: #f8fafc; }
+    body.dark .text-slate-900,
+    body.dark .text-slate-800,
+    body.dark .text-gray-700,
+    body.dark .text-gray-600,
+    body.dark .text-gray-500 {
+      color: #e5e7eb !important;
+    }
+    body.dark .info-label {
+      color: #94a3b8;
+    }
+    body.dark .empty-state {
+      background: #0f172a;
+      border-color: #334155;
+    }
+    .school-card {
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      cursor: pointer;
+    }
+    .icon-value {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .info-inline-icon {
+      width: 1.6rem;
+      height: 1.6rem;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.8rem;
+    }
+    .school-card:hover {
+      transform: translateY(-2px);
+      border-color: #93c5fd;
+      box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    }
+    .info-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      font-weight: 700;
+    }
+    .map {
+      height: 280px;
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+    .empty-state {
+      border: 1px dashed #cbd5e1;
+      background: #f8fafc;
+    }
+    .action-primary {
+      background: #1d4ed8;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .action-primary:hover {
+      background: #1e40af;
+      transform: translateY(-1px);
+    }
+    .nearby-school-card {
+      border-color: #93c5fd;
+      box-shadow: 0 16px 30px rgba(37, 99, 235, 0.12);
+      background: linear-gradient(180deg, #eff6ff 0%, #ffffff 24%);
+    }
+    .nearby-flag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.3rem 0.65rem;
+      border-radius: 9999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 0.78rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .nearby-meta-pill {
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 700;
+    }
+    .compare-choice {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.7rem;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .compare-choice input {
+      accent-color: #0f172a;
+    }
+    .compare-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 6.75rem;
+    }
+    .school-card-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.5rem;
+      width: 100%;
+      align-items: stretch;
+      margin-top: 0.25rem;
+    }
+    .school-card-actions > * {
+      min-width: 0;
+    }
+    .school-card-actions button,
+    .school-card-actions a {
+      width: 100%;
+      min-height: 2.85rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .school-card-actions button span:last-child {
+      overflow-wrap: anywhere;
+    }
+    .compare-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 860px;
+    }
+    .compare-table-wrap {
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: min(70vh, 34rem);
+      scrollbar-gutter: stable both-edges;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      background: #ffffff;
+    }
+    .compare-table-wrap::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+    .compare-table-wrap::-webkit-scrollbar-track {
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    .compare-table-wrap::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 9999px;
+      border: 2px solid #e2e8f0;
+    }
+    .compare-table-wrap::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+    .compare-table th,
+    .compare-table td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.85rem 0.95rem;
+      vertical-align: top;
+      text-align: left;
+    }
+    .compare-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #eff6ff;
+    }
+    .compare-table tbody tr:nth-child(even) td,
+    .compare-table tbody tr:nth-child(even) .compare-row-label {
+      background: #f8fafc;
+    }
+    .compare-row-label {
+      width: 180px;
+      font-weight: 800;
+      color: #475569;
+      background: #ffffff;
+      position: sticky;
+      left: 0;
+      z-index: 1;
+    }
+    .compare-column-head {
+      min-width: 220px;
+      background: #eff6ff;
+    }
+    .compare-school-head {
+      min-width: 220px;
+    }
+    .compare-school-name {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .compare-school-sub {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 0.2rem;
+    }
+    .compare-summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.45rem 0.7rem;
+      border-radius: 9999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .compare-clear-btn {
+      border: 1px solid #fca5a5;
+      background: #fef2f2;
+      color: #b91c1c;
+      font-weight: 800;
+    }
+    .compare-clear-btn:hover {
+      background: #fee2e2;
+    }
+    .compare-toolbar-btn[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .quick-menu-bar {
+      position: sticky;
+      top: 0.7rem;
+      z-index: 30;
+    }
+    .quick-menu-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      min-height: 2.75rem;
+      padding: 0.65rem 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.85rem;
+      background: #ffffff;
+      color: #334155;
+      font-size: 0.84rem;
+      font-weight: 800;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+    .quick-menu-btn:hover {
+      transform: translateY(-1px);
+      border-color: #93c5fd;
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.08);
+      background: #eff6ff;
+    }
+    .menu-target-flash {
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 12px 30px rgba(15, 23, 42, 0.08) !important;
+      border-color: #60a5fa !important;
+    }
+    body.dark .quick-menu-btn {
+      background: #111827;
+      border-color: #475569;
+      color: #e5e7eb;
+    }
+    body.dark .quick-menu-btn:hover {
+      background: #1e293b;
+      border-color: #60a5fa;
+    }
+    .forum-filter-btn {
+      border: 1px solid #cbd5e1;
+      border-radius: 9999px;
+      background: #ffffff;
+      color: #334155;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 800;
+      transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    }
+    .forum-filter-btn.is-active {
+      background: #0f172a;
+      border-color: #0f172a;
+      color: #ffffff;
+    }
+    .forum-post {
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      background: #ffffff;
+      padding: 1rem;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+    }
+    .forum-post-topic {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.35;
+    }
+    .forum-post-meta {
+      margin-top: 0.35rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.78rem;
+      color: #64748b;
+    }
+    .forum-role-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.22rem 0.55rem;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .forum-role-badge.is-parent {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    .forum-role-badge.is-student {
+      background: #ede9fe;
+      color: #7c3aed;
+    }
+    .forum-post-message {
+      margin-top: 0.75rem;
+      color: #334155;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    body.dark .forum-post {
+      background: #111827;
+      border-color: #334155;
+    }
+    body.dark .forum-post-topic {
+      color: #f8fafc;
+    }
+    body.dark .forum-post-message,
+    body.dark .forum-post-meta {
+      color: #cbd5e1;
+    }
+    .nearby-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid #1d4ed8;
+      border-radius: 0.9rem;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      font-size: 0.92rem;
+      font-weight: 800;
+      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.24);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+    .nearby-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 28px rgba(37, 99, 235, 0.28);
+    }
+    .nearby-cta.is-active {
+      border-color: #0f172a;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      box-shadow: 0 14px 28px rgba(15, 23, 42, 0.24);
+    }
+    .nearby-cta-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.18);
+      animation: nearbyPulse 1.8s ease-in-out infinite;
+    }
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+      z-index: 40;
+    }
+    .sidebar-overlay.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    body.sidebar-open,
+    body.page-locked {
+      overflow: hidden;
+    }
+    .mobile-quickbar {
+      display: none;
+    }
+    @keyframes nearbyPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    @media (max-width: 1023px) {
+      .mobile-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(90vw, 360px);
+        overflow-y: auto;
+        padding: 1rem;
+        background: #f8fafc;
+        box-shadow: -18px 0 36px rgba(15, 23, 42, 0.2);
+        transform: translateX(105%);
+        transition: transform 0.22s ease;
+        z-index: 50;
+      }
+      .mobile-sidebar.is-open {
+        transform: translateX(0);
+      }
+    }
+    @media (min-width: 1024px) {
+      .sidebar-overlay {
+        display: none !important;
+      }
+    }
+    @media (max-width: 767px) {
+      main {
+        padding-bottom: 5.75rem !important;
+      }
+      .filters-panel.is-collapsed {
+        display: none;
+      }
+      .font-size-control,
+      .view-toggle {
+        width: 100%;
+        justify-content: center;
+      }
+      .font-size-control {
+        padding: 0.45rem;
+      }
+      #langBtn,
+      #resetBtn,
+      .nearby-cta,
+      #sidebarDrawerBtn {
+        width: 100%;
+        justify-content: center;
+      }
+      .mobile-sidebar {
+        width: 100vw;
+        max-width: none;
+      }
+      .school-card-actions {
+        width: 100%;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .school-card {
+        padding: 1rem;
+      }
+      .mobile-quickbar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.55rem;
+        padding: 0.7rem 0.75rem calc(0.8rem + env(safe-area-inset-bottom, 0px));
+        background: rgba(248, 250, 252, 0.96);
+        backdrop-filter: blur(12px);
+        border-top: 1px solid #e5e7eb;
+        z-index: 35;
+      }
+      .mobile-quickbar-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        min-height: 3rem;
+        padding: 0.6rem 0.5rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.85rem;
+        background: #ffffff;
+        color: #334155;
+        font-size: 0.76rem;
+        font-weight: 800;
+        line-height: 1.15;
+        text-align: center;
+      }
+      .mobile-quickbar-btn.is-active {
+        border-color: #1d4ed8;
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      #modal,
+      #compareModal {
+        padding: 0;
+      }
+      #modal > div,
+      #compareModal > div {
+        width: 100%;
+        max-width: none;
+        min-height: 100dvh;
+        border-radius: 0;
+      }
+      .compare-modal-header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: #ffffff;
+      }
+      .compare-modal-body {
+        flex: 1;
+        overflow-y: auto;
+      }
+      #modal > div > div:last-child,
+      #compareModal > div > div:last-child {
+        max-height: calc(100dvh - 88px);
+        overflow-y: auto;
+      }
+      .compare-table {
+        min-width: 720px;
+      }
+      .compare-table th,
+      .compare-table td {
+        padding: 0.75rem 0.8rem;
+        font-size: 0.82rem;
+      }
+      .compare-table-wrap {
+        max-height: calc(100dvh - 240px);
+      }
+      .school-card-hero {
+        min-height: 94px;
+        padding: 0.8rem 0.9rem;
+      }
+      .map {
+        height: 220px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen">
+    <header class="hero-banner text-white">
+      <div class="max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-5 py-8 md:py-10">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <p id="heroEyebrow" class="text-blue-100 uppercase tracking-widest text-xs font-semibold mb-2">Education directory</p>
+            <h1 id="pageHeading" class="text-3xl md:text-4xl font-bold">SchoolSpark HK</h1>
+            <p id="heroIntro" class="text-blue-100 mt-3 max-w-2xl">
+              A clearer, more formal school reference portal for browsing district, level, religion, address and contact information from the public EDB dataset.
+            </p>
+          </div>
+          <div class="grid grid-cols-3 gap-3 w-full md:w-auto text-center">
+            <div class="bg-white bg-opacity-10 rounded-xl px-4 py-3">
+              <div id="totalSchools" class="text-2xl font-bold">0</div>
+              <div id="statsSchoolsLabel" class="text-xs text-blue-100">Schools</div>
+            </div>
+            <div class="bg-white bg-opacity-10 rounded-xl px-4 py-3">
+              <div id="totalDistricts" class="text-2xl font-bold">0</div>
+              <div id="statsDistrictsLabel" class="text-xs text-blue-100">Districts</div>
+            </div>
+            <div class="bg-white bg-opacity-10 rounded-xl px-4 py-3">
+              <div id="totalLevels" class="text-2xl font-bold">0</div>
+              <div id="statsLevelsLabel" class="text-xs text-blue-100">Levels</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-5 py-6 md:py-8 space-y-6">
+      <section class="quick-menu-bar panel rounded-2xl px-4 py-3 md:px-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <div id="quickMenuLabel" class="text-sm font-semibold text-slate-900">Quick menu</div>
+            <p id="quickMenuIntro" class="text-xs text-gray-500 mt-1">Open the Compare page or Forum page in one tap.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button id="menuCompareBtn" type="button" onclick="scrollToCompareSection()" class="quick-menu-btn">
+              <span aria-hidden="true">⚖️</span>
+              <span id="menuCompareText">Compare</span>
+            </button>
+            <button id="menuForumBtn" type="button" onclick="scrollToForumSection()" class="quick-menu-btn">
+              <span aria-hidden="true">💬</span>
+              <span id="menuForumText">Forum</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel rounded-2xl p-5 md:p-6">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-5">
+          <div>
+            <h2 id="searchSectionTitle" class="text-xl font-semibold text-slate-900">Search and filter</h2>
+            <p id="searchSectionIntro" class="text-sm text-gray-600 mt-1">Use keywords and filters to find schools by name, district, level, religion or address.</p>
+          </div>
+          <div class="flex flex-wrap gap-2 items-center">
+            <div class="font-size-control" role="group" aria-label="Font size controls">
+              <span id="fontSizeLabel" class="font-size-label">Font size</span>
+              <button id="fontSizeNormalBtn" type="button" onclick="setFontSize('normal')" class="font-size-option is-active" aria-label="Small font size">A</button>
+              <button id="fontSizeLargeBtn" type="button" onclick="setFontSize('large')" class="font-size-option" aria-label="Medium font size" style="font-size: 1rem;">A</button>
+              <button id="fontSizeXLargeBtn" type="button" onclick="setFontSize('xlarge')" class="font-size-option" aria-label="Large font size" style="font-size: 1.15rem; font-weight: 900;">A</button>
+            </div>
+            <button id="langBtn" onclick="toggleLanguage()" class="px-4 py-2 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900">中文 / EN</button>
+            <button id="resetBtn" onclick="resetFilters()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium">Reset</button>
+          </div>
+        </div>
+
+        <button id="filtersCollapseBtn" type="button" onclick="toggleFilterPanel()" class="md:hidden w-full mb-4 px-4 py-2 rounded-lg border border-slate-300 bg-slate-50 text-slate-700 text-sm font-semibold">Show filters</button>
+
+        <div id="filtersPanel" class="filters-panel">
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+            <div>
+              <label id="keywordSearchLabel" class="info-label mb-2 block">Keyword search</label>
+              <input id="search" type="text" class="input-control" placeholder="Search school name, district or address">
+            </div>
+            <div>
+              <label id="districtLabel" class="info-label mb-2 block">District</label>
+              <select id="districtFilter" class="input-control">
+                <option value="">All districts</option>
+              </select>
+            </div>
+            <div>
+              <label id="levelLabel" class="info-label mb-2 block">School level</label>
+              <select id="levelFilter" class="input-control">
+                <option value="">All levels</option>
+              </select>
+            </div>
+            <div>
+              <label id="religionLabel" class="info-label mb-2 block">Religion</label>
+              <select id="religionFilter" class="input-control">
+                <option value="">All religions</option>
+              </select>
+            </div>
+            <div>
+              <label id="sortLabel" class="info-label mb-2 block">Sort results</label>
+              <select id="sortBy" class="input-control">
+                <option value="name-asc">Name A-Z</option>
+                <option value="district-asc">District</option>
+                <option value="level-asc">Level</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mt-4 text-sm text-gray-600 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <p id="resultSummary">Loading school records...</p>
+            <p><span id="sourcePrefix">Source:</span> <span id="sourceValue" class="font-semibold">Education Bureau public dataset</span></p>
+          </div>
+        </div>
+      </section>
+
+      <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebarDrawer()"></div>
+
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-4">
+          <div class="panel rounded-2xl p-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div class="flex flex-wrap gap-2 items-center">
+                <div class="view-toggle" role="group" aria-label="Browse view">
+                  <button id="listViewBtn" type="button" onclick="setViewMode('list')" class="view-toggle-btn is-active">List view</button>
+                  <button id="mapViewBtn" type="button" onclick="setViewMode('map')" class="view-toggle-btn">Map view</button>
+                </div>
+                <button id="nearMeBtn" type="button" onclick="toggleNearbySchools()" class="nearby-cta" aria-pressed="false">
+                  <span class="nearby-cta-icon" aria-hidden="true">📍</span>
+                  <span id="nearMeBtnText">Schools near me</span>
+                </button>
+              </div>
+              <button id="sidebarDrawerBtn" type="button" onclick="toggleSidebarDrawer()" class="lg:hidden px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-semibold" aria-expanded="false">Saved & compare</button>
+            </div>
+            <p id="mapHint" class="text-sm text-gray-600 mt-3">Switch to map view to explore school pins across Hong Kong.</p>
+          </div>
+          <div id="listViewPanel">
+            <div id="list" class="space-y-4"></div>
+          </div>
+          <div id="mapViewPanel" class="hidden panel rounded-2xl p-3 md:p-4">
+            <div id="browseMap" class="map browse-map"></div>
+          </div>
+        </div>
+
+        <aside id="infoSidebar" class="space-y-4 mobile-sidebar" aria-hidden="true">
+          <div class="lg:hidden flex items-center justify-between gap-3 mb-1">
+            <h3 id="sidebarPanelTitle" class="text-base font-semibold text-slate-900">Saved, compare and info</h3>
+            <button id="sidebarCloseBtn" type="button" onclick="closeSidebarDrawer()" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-medium">Close</button>
+          </div>
+          <div class="panel rounded-2xl p-5">
+            <h3 id="overviewTitle" class="text-lg font-semibold text-slate-900 mb-3">Directory overview</h3>
+            <ul class="space-y-3 text-sm text-gray-700">
+              <li><strong id="coverageLabel">Coverage:</strong> <span id="coverageText">Public school location and contact records in Hong Kong.</span></li>
+              <li><strong id="searchableLabel">Searchable fields:</strong> <span id="searchableText">Name, district, address, school level and religion.</span></li>
+              <li><strong id="useCaseLabel">Use case:</strong> <span id="useCaseText">Shortlist schools, compare details and open the official website.</span></li>
+            </ul>
+          </div>
+
+          <div class="panel rounded-2xl p-5">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <h3 id="savedSchoolsTitle" class="text-lg font-semibold text-slate-900">Saved schools</h3>
+              <span id="favoritesCount" class="text-sm text-gray-500">0 saved</span>
+            </div>
+            <button id="favoritesToggleBtn" onclick="toggleFavoritesOnly()" class="mb-3 px-4 py-2 rounded-lg border border-amber-300 text-amber-700 text-sm font-medium bg-amber-50 w-full">Saved only: Off</button>
+            <div id="favoritesPanel" class="space-y-2 text-sm text-gray-600">
+              <p id="favoritesEmptyText">No saved schools yet. Use the Save button on a school card.</p>
+            </div>
+          </div>
+
+          <div id="compareSection" class="panel rounded-2xl p-5">
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <h3 id="compareTitle" class="text-lg font-semibold text-slate-900">Compare schools</h3>
+                <p id="compareIntro" class="text-sm text-gray-600 mt-1">Select 2 to 4 schools from the cards for side-by-side comparison.</p>
+              </div>
+              <span id="compareCount" class="text-sm text-gray-500">0 selected</span>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <button id="openCompareBtn" onclick="openComparePage()" class="compare-toolbar-btn px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold w-full" disabled>Compare selected</button>
+              <button id="clearCompareBtn" onclick="clearCompareSelection()" class="compare-toolbar-btn compare-clear-btn px-4 py-2 rounded-lg text-sm font-semibold w-full">Clear all</button>
+            </div>
+            <p id="compareHint" class="text-xs text-gray-500 mt-3">Choose up to 4 schools to compare.</p>
+          </div>
+
+          <div class="panel rounded-2xl p-5">
+            <h3 id="infoShownTitle" class="text-lg font-semibold text-slate-900 mb-3">Information shown</h3>
+            <div class="flex flex-wrap gap-2">
+              <span id="pillDistrict" class="meta-pill">District</span>
+              <span id="pillLevel" class="meta-pill">Level</span>
+              <span id="pillReligion" class="meta-pill">Religion</span>
+              <span id="pillPhone" class="meta-pill">Phone</span>
+              <span id="pillWebsite" class="meta-pill">Website</span>
+              <span id="pillMap" class="meta-pill">Map location</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section id="forumSection" class="panel rounded-2xl p-5 md:p-6">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 mb-4">
+          <div>
+            <h2 id="forumTitle" class="text-xl font-semibold text-slate-900">Parent & student forum</h2>
+            <p id="forumIntro" class="text-sm text-gray-600 mt-1">Share school questions, parent tips and student experience in one place.</p>
+          </div>
+          <p id="forumLocalNote" class="text-xs text-gray-500">Posts sync through the project server when available, or stay on this device as a fallback.</p>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div class="xl:col-span-2 space-y-4">
+            <div class="flex flex-wrap gap-2">
+              <button id="forumFilterAllBtn" type="button" onclick="setForumRoleFilter('all')" class="forum-filter-btn is-active" aria-pressed="true">All posts</button>
+              <button id="forumFilterParentBtn" type="button" onclick="setForumRoleFilter('parent')" class="forum-filter-btn" aria-pressed="false">Parents</button>
+              <button id="forumFilterStudentBtn" type="button" onclick="setForumRoleFilter('student')" class="forum-filter-btn" aria-pressed="false">Students</button>
+            </div>
+            <div id="forumPosts" class="space-y-3"></div>
+          </div>
+
+          <div class="panel rounded-xl p-4 space-y-4">
+            <div>
+              <label id="forumRoleLabel" class="info-label mb-2 block">I am a</label>
+              <select id="forumRole" class="input-control">
+                <option value="parent">Parent</option>
+                <option value="student">Student</option>
+              </select>
+            </div>
+            <div>
+              <label id="forumNameLabel" class="info-label mb-2 block">Display name</label>
+              <input id="forumName" type="text" class="input-control" placeholder="e.g. Holly / Parent from Kowloon">
+            </div>
+            <div>
+              <label id="forumTopicLabel" class="info-label mb-2 block">Topic</label>
+              <input id="forumTopic" type="text" class="input-control" placeholder="What would you like to ask or share?">
+            </div>
+            <div>
+              <label id="forumMessageLabel" class="info-label mb-2 block">Message</label>
+              <textarea id="forumMessage" rows="4" class="input-control" placeholder="Share your question, advice, or experience here."></textarea>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <button id="forumPostBtn" type="button" onclick="submitForumPost()" class="action-primary px-4 py-3 rounded-lg text-white text-sm font-semibold w-full">Post message</button>
+              <button id="forumClearBtn" type="button" onclick="clearForumComposer()" class="px-4 py-3 rounded-lg border border-slate-300 text-slate-700 text-sm font-semibold w-full">Clear</button>
+            </div>
+            <p id="forumStatus" class="text-sm text-gray-500" aria-live="polite">Write a question or tip to start the discussion.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="mobile-quickbar md:hidden">
+      <button id="mobileFilterAction" type="button" onclick="toggleFilterPanel()" class="mobile-quickbar-btn">
+        <span aria-hidden="true">🔎</span>
+        <span id="mobileFilterBtn">Show filters</span>
+      </button>
+      <button id="mobileNearbyAction" type="button" onclick="toggleNearbySchools()" class="mobile-quickbar-btn">
+        <span aria-hidden="true">📍</span>
+        <span id="mobileNearbyBtn">Schools near me</span>
+      </button>
+      <button id="mobileSavedAction" type="button" onclick="toggleSidebarDrawer()" class="mobile-quickbar-btn" aria-expanded="false">
+        <span aria-hidden="true">⭐</span>
+        <span id="mobileSavedBtn">Saved & compare</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 p-4 md:p-8">
+    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div class="border-b border-gray-200 px-5 md:px-6 py-4 flex items-start justify-between gap-4">
+        <div>
+          <p id="modalProfileLabel" class="text-xs uppercase tracking-wider text-slate-500 font-semibold">School profile</p>
+          <h2 id="modalName" class="text-2xl font-bold text-slate-900"></h2>
+          <p id="modalSubname" class="text-sm text-gray-600 mt-1"></p>
+        </div>
+        <button onclick="closeModal()" class="text-2xl text-gray-500 hover:text-gray-800">×</button>
+      </div>
+
+      <div class="p-5 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="panel rounded-xl p-4">
+              <div id="detailDistrictLabel" class="info-label">District</div>
+              <div id="detailDistrict" class="mt-1 font-medium text-slate-900"></div>
+            </div>
+            <div class="panel rounded-xl p-4">
+              <div id="detailLevelLabel" class="info-label">School level</div>
+              <div id="detailLevel" class="mt-1 font-medium text-slate-900"></div>
+            </div>
+            <div class="panel rounded-xl p-4">
+              <div id="detailReligionLabel" class="info-label">Religion</div>
+              <div id="detailReligion" class="mt-1 font-medium text-slate-900"></div>
+            </div>
+            <div class="panel rounded-xl p-4">
+              <div id="detailPhoneLabel" class="info-label">Telephone</div>
+              <div id="detailPhone" class="mt-1 font-medium text-slate-900"></div>
+            </div>
+          </div>
+
+          <div class="panel rounded-xl p-4">
+            <div id="detailAddressLabel" class="info-label">Address</div>
+            <div id="detailAddress" class="mt-1 text-slate-800"></div>
+          </div>
+
+          <div class="panel rounded-xl p-4">
+            <div id="detailWebsiteLabel" class="info-label">Official website</div>
+            <div id="detailWebsite" class="mt-1"></div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="panel rounded-xl p-4">
+            <div id="mapLocationLabel" class="info-label mb-2">Map location</div>
+            <div id="map" class="map"></div>
+          </div>
+          <div class="panel rounded-xl p-4 text-sm text-gray-600">
+            <div id="referenceNoteLabel" class="info-label mb-2">Reference note</div>
+            <p id="referenceText">This page presents publicly available school information. Please confirm admission details directly with the school or the official website.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="compareModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 p-4 md:p-8">
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div class="compare-modal-header border-b border-gray-200 px-5 md:px-6 py-4 flex items-start justify-between gap-4">
+        <div>
+          <p id="compareModalEyebrow" class="text-xs uppercase tracking-wider text-slate-500 font-semibold">School comparison</p>
+          <h2 id="compareModalTitle" class="text-2xl font-bold text-slate-900">Compare selected schools</h2>
+          <p id="compareModalIntro" class="text-sm text-gray-600 mt-1">Review key details side by side.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="compareModalClearBtn" type="button" onclick="clearCompareSelection()" class="compare-clear-btn px-4 py-2 rounded-lg text-sm font-semibold">Clear all</button>
+          <button onclick="closeCompareModal()" class="text-2xl text-gray-500 hover:text-gray-800">×</button>
+        </div>
+      </div>
+      <div class="compare-modal-body p-5 md:p-6 space-y-4">
+        <div id="compareSelectionSummary" class="flex flex-wrap gap-2"></div>
+        <div id="compareTableWrap" class="compare-table-wrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let schools = [];
+    let currentLang = 'en';
+    let mapInstance = null;
+    let browseMapInstance = null;
+    let browseMarkerLayer = null;
+    let nearbyMarker = null;
+    let nearbyUserPosition = null;
+    let currentSchool = null;
+    let showFavoritesOnly = false;
+    let nearbyModeActive = false;
+    let favoriteIds = [];
+    let compareIds = [];
+    let visibleSchools = [];
+    let currentViewMode = 'list';
+    let currentFontSize = 'normal';
+    let sidebarDrawerOpen = false;
+    let filterTimer = null;
+    let forumPosts = [];
+    let forumRoleFilter = 'all';
+    let renderedSchoolLimit = 120;
+    const INITIAL_RENDER_COUNT = 120;
+    const RENDER_PAGE_SIZE = 120;
+    let uiRefreshToken = null;
+    const schoolIdCache = new WeakMap();
+    const schoolSearchCache = new WeakMap();
+
+    try {
+      favoriteIds = JSON.parse(localStorage.getItem('hk-school-favorites') || '[]');
+      compareIds = JSON.parse(localStorage.getItem('hk-school-compare') || '[]');
+      compareIds = Array.isArray(compareIds) ? compareIds.slice(0, 4) : [];
+      forumPosts = JSON.parse(localStorage.getItem('hk-school-forum-posts') || '[]');
+      forumPosts = Array.isArray(forumPosts) ? forumPosts : [];
+      currentLang = localStorage.getItem('hk-school-language') === 'zh' ? 'zh' : 'en';
+      const savedFontSize = localStorage.getItem('hk-school-font-size');
+      currentFontSize = ['normal', 'large', 'xlarge'].includes(savedFontSize) ? savedFontSize : 'normal';
+    } catch {
+      favoriteIds = [];
+      compareIds = [];
+      forumPosts = [];
+      currentLang = 'en';
+      currentFontSize = 'normal';
+    }
+
+    const bureauDataUrl = 'https://www.edb.gov.hk/attachment/en/student-parents/sch-info/sch-search/sch-location-info/SCH_LOC_EDB.json';
+    const dataSources = (() => {
+      const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+      return isLocalDev
+        ? ['/api/schools', 'SCH_LOC_EDB.json', bureauDataUrl]
+        : ['SCH_LOC_EDB.json', bureauDataUrl, '/api/schools'];
+    })();
+    const forumApiUrl = '/api/forum';
+    const translations = {
+      en: {
+        heroEyebrow: 'Education directory',
+        pageHeading: 'SchoolSpark HK',
+        heroIntro: 'A clearer, more formal school reference portal for browsing district, level, religion, address and contact information from the public EDB dataset.',
+        schoolsLabel: 'Schools',
+        districtsLabel: 'Districts',
+        levelsLabel: 'Levels',
+        searchSectionTitle: 'Search and filter',
+        searchSectionIntro: 'Use keywords and filters to find schools by name, district, level, religion or address.',
+        listView: 'List view',
+        mapView: 'Map view',
+        schoolsNearMe: 'Schools near me',
+        showAllSchools: 'Show all schools',
+        mapHint: 'Switch to map view to explore school pins across Hong Kong.',
+        nearbyHint: 'Nearby mode is on — results are sorted from closest to farthest.',
+        nearbyBadge: 'Nearby',
+        closestFirst: 'Closest first',
+        locating: 'Locating...',
+        locationNotSupported: 'Location is not supported on this device.',
+        locationFailed: 'Unable to get your location. Please allow access and try again.',
+        nearbyResults: '{count} nearby school(s)',
+        nearbyResultsSaved: '{count} nearby saved school(s)',
+        mapNoResults: 'No map locations available for the current filters.',
+        yourLocation: 'Your location',
+        fontSize: 'Font size',
+        fontNormal: 'Small',
+        fontLarge: 'Medium',
+        fontXLarge: 'Large',
+        darkMode: 'Dark mode',
+        lightMode: 'Light mode',
+        reset: 'Reset',
+        showFilters: 'Show filters',
+        hideFilters: 'Hide filters',
+        sidebarTools: 'Saved & compare',
+        sidebarPanelTitle: 'Saved, compare and info',
+        closePanel: 'Close',
+        keywordSearch: 'Keyword search',
+        searchPlaceholder: 'Search school name, district or address',
+        district: 'District',
+        allDistricts: 'All districts',
+        schoolLevel: 'School level',
+        allLevels: 'All levels',
+        religion: 'Religion',
+        allReligions: 'All religions',
+        sortResults: 'Sort results',
+        sortName: 'Name A-Z',
+        sortDistrict: 'District',
+        sortLevel: 'Level',
+        loadingRecords: 'Loading school records...',
+        sourcePrefix: 'Source:',
+        sourceValue: 'Education Bureau public dataset',
+        overviewTitle: 'Directory overview',
+        coverageLabel: 'Coverage:',
+        coverageText: 'Public school location and contact records in Hong Kong.',
+        searchableLabel: 'Searchable fields:',
+        searchableText: 'Name, district, address, school level and religion.',
+        useCaseLabel: 'Use case:',
+        useCaseText: 'Shortlist schools, compare details and open the official website.',
+        quickMenuLabel: 'Quick menu',
+        quickMenuIntro: 'Open the Compare page or Forum page in one tap.',
+        menuCompare: 'Compare',
+        menuForum: 'Forum',
+        forumTitle: 'Parent & student forum',
+        forumIntro: 'Share school questions, parent tips and student experience in one place.',
+        forumLocalNote: 'Posts sync through the project server when available, or stay on this device as a fallback.',
+        forumAll: 'All posts',
+        forumParents: 'Parents',
+        forumStudents: 'Students',
+        forumRoleLabel: 'I am a',
+        forumRoleParent: 'Parent',
+        forumRoleStudent: 'Student',
+        forumNameLabel: 'Display name',
+        forumNamePlaceholder: 'e.g. Holly / Parent from Kowloon',
+        forumTopicLabel: 'Topic',
+        forumTopicPlaceholder: 'What would you like to ask or share?',
+        forumMessageLabel: 'Message',
+        forumMessagePlaceholder: 'Share your question, advice, or experience here.',
+        forumPostButton: 'Post message',
+        forumClearButton: 'Clear',
+        forumStatusReady: 'Write a question or tip to start the discussion.',
+        forumStatusLoading: 'Loading forum posts...',
+        forumStatusOnline: 'Forum connected. New posts can be shared with other users.',
+        forumStatusOffline: 'Forum is using this device only until the server is available.',
+        forumStatusPosting: 'Posting your message...',
+        forumStatusPosted: 'Message posted successfully.',
+        forumStatusOfflinePosted: 'Message saved on this device. It will still appear in the forum here.',
+        forumStatusValidation: 'Please enter both a topic and a message.',
+        forumNoPostsTitle: 'No forum posts yet',
+        forumNoPostsText: 'Be the first to start the discussion.',
+        forumGuestParent: 'Parent guest',
+        forumGuestStudent: 'Student guest',
+        savedSchoolsTitle: 'Saved schools',
+        compareTitle: 'Compare schools',
+        compareIntro: 'Select 2 to 4 schools from the cards, then press Compare selected.',
+        compareCount: '{count} selected',
+        compareButton: 'Compare selected',
+        compareClear: 'Clear all',
+        compareHint: 'Choose up to 4 schools, then use the Compare selected button.',
+        compareCriteria: 'Criteria',
+        compareLimit: 'You can compare up to 4 schools at once.',
+        compareNeedTwo: 'Select at least 2 schools to compare.',
+        compareLabel: 'Compare',
+        compareModalEyebrow: 'School comparison',
+        compareModalTitle: 'Compare selected schools',
+        compareModalIntro: 'Review key details side by side.',
+        compareRowSchool: 'School',
+        compareRowLevel: 'School level',
+        compareRowDistrict: 'District',
+        compareRowType: 'School type',
+        compareRowFinance: 'Finance type',
+        compareRowCurriculum: 'Curriculum',
+        compareRowLanguage: 'Language of instruction',
+        compareRowReligion: 'Religion',
+        compareRowFees: 'Fee level',
+        compareRowRatio: 'Student-teacher ratio',
+        compareRowThroughTrain: 'Through-train status',
+        compareRowSession: 'Session',
+        compareRowGender: 'Student gender',
+        compareRowPhone: 'Telephone',
+        compareRowWebsite: 'Website',
+        compareRowAddress: 'Address',
+        compareNotListed: 'Not listed in the Bureau location dataset',
+        compareCheckWebsite: 'Please check the school website',
+        compareLocalCurriculum: 'Hong Kong local curriculum',
+        compareInternationalCurriculum: 'International / school-based curriculum',
+        compareEsfCurriculum: 'ESF / international curriculum',
+        compareMainlyEnglish: 'Mainly English',
+        compareSchoolBasedFees: 'School-based fees, see website',
+        comparePublicFunding: 'Public-funded / details not listed',
+        compareLikelyNo: 'Not indicated',
+        favoritesEmpty: 'No saved schools yet. Use the Save button on a school card.',
+        favoritesCount: '{count} saved',
+        savedOnlyOn: 'Saved only: On',
+        savedOnlyOff: 'Saved only: Off',
+        infoShownTitle: 'Information shown',
+        phone: 'Phone',
+        website: 'Website',
+        mapLocation: 'Map location',
+        schoolProfile: 'School profile',
+        telephone: 'Telephone',
+        address: 'Address',
+        officialWebsite: 'Official website',
+        referenceNote: 'Reference note',
+        referenceText: 'This page presents publicly available school information. Please confirm admission details directly with the school or the official website.',
+        resultsFound: '{count} result(s) found',
+        resultsFoundSaved: '{count} result(s) found • Saved only',
+        showingVisibleResults: 'Showing {visible} of {total} results for faster browsing',
+        showMoreResults: 'Show more results',
+        noMatchingTitle: 'No matching schools found',
+        noMatchingText: 'Try changing the keyword or clearing one of the filters.',
+        save: '☆ Save',
+        saved: '★ Saved',
+        viewDetails: 'View details',
+        copyDetails: 'Copy details',
+        visitWebsite: 'Visit website',
+        detailsCopied: 'Details copied to clipboard.',
+        copyFailed: 'Copy failed. Please try again.',
+        showingFirstSaved: 'Showing the first 6 saved schools.',
+        locationUnavailable: 'Location not available',
+        copyDistrict: 'District',
+        copyLevel: 'Level',
+        copyReligion: 'Religion',
+        copyPhone: 'Phone',
+        copyAddress: 'Address',
+        copyWebsite: 'Website',
+        loadFailedPrefix: 'Load failed:',
+        dataLoadFailedTitle: 'Data could not be loaded',
+        dataLoadFailedText: 'Please refresh the page once. If it still fails, the cache has been updated and the next reload should fix it.'
+      },
+      zh: {
+        heroEyebrow: '教育資訊目錄',
+        pageHeading: '香港學校搜尋平台',
+        heroIntro: '以更清晰、更正式的方式瀏覽教育局公開資料中的分區、學校級別、宗教、地址及聯絡資訊。',
+        schoolsLabel: '學校',
+        districtsLabel: '分區',
+        levelsLabel: '級別',
+        searchSectionTitle: '搜尋與篩選',
+        searchSectionIntro: '使用關鍵字及篩選條件，按學校名稱、分區、級別、宗教或地址搜尋學校。',
+        listView: '列表檢視',
+        mapView: '地圖檢視',
+        schoolsNearMe: '附近學校',
+        showAllSchools: '顯示全部學校',
+        mapHint: '切換到地圖檢視即可查看香港各區學校標記。',
+        nearbyHint: '已啟用附近模式，結果會按距離由近至遠排列。',
+        nearbyBadge: '附近',
+        closestFirst: '由近至遠',
+        locating: '定位中...',
+        locationNotSupported: '此裝置不支援定位功能。',
+        locationFailed: '未能取得你的位置，請允許定位權限後再試。',
+        nearbyResults: '附近學校 {count} 間',
+        nearbyResultsSaved: '附近已收藏學校 {count} 間',
+        mapNoResults: '目前篩選條件下沒有可顯示的地圖位置。',
+        yourLocation: '你的位置',
+        fontSize: '字體大小',
+        fontNormal: '細',
+        fontLarge: '中',
+        fontXLarge: '大',
+        darkMode: '深色模式',
+        lightMode: '淺色模式',
+        reset: '重設',
+        showFilters: '顯示篩選',
+        hideFilters: '隱藏篩選',
+        sidebarTools: '收藏及比較',
+        sidebarPanelTitle: '收藏、比較與資訊',
+        closePanel: '關閉',
+        keywordSearch: '關鍵字搜尋',
+        searchPlaceholder: '搜尋學校名稱、分區或地址',
+        district: '分區',
+        allDistricts: '全部分區',
+        schoolLevel: '學校級別',
+        allLevels: '全部級別',
+        religion: '宗教',
+        allReligions: '全部宗教',
+        sortResults: '排序結果',
+        sortName: '按名稱排序',
+        sortDistrict: '按分區排序',
+        sortLevel: '按級別排序',
+        loadingRecords: '正在載入學校資料...',
+        sourcePrefix: '來源：',
+        sourceValue: '教育局公開資料集',
+        overviewTitle: '目錄概覽',
+        coverageLabel: '涵蓋範圍：',
+        coverageText: '香港學校位置及聯絡資料。',
+        searchableLabel: '可搜尋欄位：',
+        searchableText: '名稱、分區、地址、學校級別及宗教。',
+        useCaseLabel: '用途：',
+        useCaseText: '收藏學校、比較資料及前往官方網站。',
+        quickMenuLabel: '快速選單',
+        quickMenuIntro: '一按即可開啟比較頁或交流頁。',
+        menuCompare: '比較',
+        menuForum: '交流區',
+        forumTitle: '家長及學生交流區',
+        forumIntro: '集中分享選校問題、家長建議與學生經驗。',
+        forumLocalNote: '有伺服器時會同步帖文；否則會先保存在此裝置作後備。',
+        forumAll: '全部帖子',
+        forumParents: '家長',
+        forumStudents: '學生',
+        forumRoleLabel: '我的身份',
+        forumRoleParent: '家長',
+        forumRoleStudent: '學生',
+        forumNameLabel: '顯示名稱',
+        forumNamePlaceholder: '例如：Holly／九龍區家長',
+        forumTopicLabel: '主題',
+        forumTopicPlaceholder: '你想發問或分享甚麼？',
+        forumMessageLabel: '內容',
+        forumMessagePlaceholder: '請輸入你的問題、建議或經驗。',
+        forumPostButton: '發佈帖子',
+        forumClearButton: '清除',
+        forumStatusReady: '歡迎發問或分享，開始交流。',
+        forumStatusLoading: '正在載入論壇帖子...',
+        forumStatusOnline: '論壇已連線，新帖子可與其他使用者分享。',
+        forumStatusOffline: '目前先以此裝置模式使用論壇，待伺服器可用時再同步。',
+        forumStatusPosting: '正在發佈帖子...',
+        forumStatusPosted: '帖子已成功發佈。',
+        forumStatusOfflinePosted: '帖子已保存在此裝置，並會在此論壇顯示。',
+        forumStatusValidation: '請同時輸入主題及內容。',
+        forumNoPostsTitle: '暫時未有帖子',
+        forumNoPostsText: '歡迎成為第一位發起討論的人。',
+        forumGuestParent: '家長訪客',
+        forumGuestStudent: '學生訪客',
+        savedSchoolsTitle: '已收藏學校',
+        compareTitle: '學校比較',
+        compareIntro: '先在卡片上選擇 2 至 4 間學校，再按「比較所選學校」。',
+        compareCount: '已選 {count} 間',
+        compareButton: '比較所選學校',
+        compareClear: '全部清除',
+        compareHint: '最多可同時比較 4 間學校，請按下方按鈕開啟比較頁。',
+        compareCriteria: '比較項目',
+        compareLimit: '一次最多只能比較 4 間學校。',
+        compareNeedTwo: '請先選擇至少 2 間學校進行比較。',
+        compareLabel: '比較',
+        compareModalEyebrow: '學校比較',
+        compareModalTitle: '比較所選學校',
+        compareModalIntro: '並排查看重點資料。',
+        compareRowSchool: '學校',
+        compareRowLevel: '學校級別',
+        compareRowDistrict: '分區',
+        compareRowType: '學校類別',
+        compareRowFinance: '資助種類',
+        compareRowCurriculum: '課程',
+        compareRowLanguage: '授課語言',
+        compareRowReligion: '宗教',
+        compareRowFees: '收費水平',
+        compareRowRatio: '師生比例',
+        compareRowThroughTrain: '一條龍 / 直升情況',
+        compareRowSession: '授課時間',
+        compareRowGender: '學生性別',
+        compareRowPhone: '聯絡電話',
+        compareRowWebsite: '網站',
+        compareRowAddress: '地址',
+        compareNotListed: '教育局位置資料未有列明',
+        compareCheckWebsite: '請查看學校網站',
+        compareLocalCurriculum: '香港本地課程',
+        compareInternationalCurriculum: '國際／校本課程',
+        compareEsfCurriculum: '英基／國際課程',
+        compareMainlyEnglish: '以英文為主',
+        compareSchoolBasedFees: '學費由學校自訂，請參閱網站',
+        comparePublicFunding: '公營資助，未列明收費詳情',
+        compareLikelyNo: '未有列明',
+        favoritesEmpty: '尚未收藏任何學校，請在學校卡片按「收藏」。',
+        favoritesCount: '已收藏 {count} 間',
+        savedOnlyOn: '只顯示收藏：開',
+        savedOnlyOff: '只顯示收藏：關',
+        infoShownTitle: '顯示資訊',
+        phone: '電話',
+        website: '網站',
+        mapLocation: '地圖位置',
+        schoolProfile: '學校資料',
+        telephone: '聯絡電話',
+        address: '地址',
+        officialWebsite: '官方網站',
+        referenceNote: '參考備註',
+        referenceText: '本頁展示公開學校資訊，入學詳情請以學校或官方網站公布為準。',
+        resultsFound: '找到 {count} 項結果',
+        resultsFoundSaved: '找到 {count} 項結果 • 只顯示收藏',
+        showingVisibleResults: '為加快顯示，現正顯示 {visible} / {total} 項結果',
+        showMoreResults: '顯示更多結果',
+        noMatchingTitle: '找不到符合條件的學校',
+        noMatchingText: '請嘗試更改關鍵字或清除部分篩選條件。',
+        save: '☆ 收藏',
+        saved: '★ 已收藏',
+        viewDetails: '查看詳情',
+        copyDetails: '複製資料',
+        visitWebsite: '前往網站',
+        detailsCopied: '已複製到剪貼簿。',
+        copyFailed: '複製失敗，請再試一次。',
+        showingFirstSaved: '目前只顯示首 6 間已收藏學校。',
+        locationUnavailable: '未提供位置資料',
+        copyDistrict: '分區',
+        copyLevel: '級別',
+        copyReligion: '宗教',
+        copyPhone: '電話',
+        copyAddress: '地址',
+        copyWebsite: '網站',
+        loadFailedPrefix: '載入失敗：',
+        dataLoadFailedTitle: '無法載入資料',
+        dataLoadFailedText: '請重新整理頁面；如仍失敗，快取已更新，下次重新載入應可修復。'
+      }
+    };
+
+    function t(key, values = {}) {
+      let text = translations[currentLang]?.[key] || translations.en[key] || key;
+      Object.entries(values).forEach(([name, value]) => {
+        text = text.replace(`{${name}}`, value);
+      });
+      return text;
+    }
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function setText(id, value) {
+      const el = $(id);
+      if (el) el.textContent = value;
+    }
+
+    function setHtml(id, value) {
+      const el = $(id);
+      if (el) el.innerHTML = value;
+    }
+
+    function textFor(school, enKey, zhKey) {
+      return currentLang === 'en' ? (school[enKey] || school[zhKey] || 'N/A') : (school[zhKey] || school[enKey] || 'N/A');
+    }
+
+    function cleanAddressText(value) {
+      return safeValue(value)
+        .replace(/\([^)]*\)/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .replace(/\s+,/g, ',')
+        .trim();
+    }
+
+    function safeValue(value) {
+      return value && String(value).trim() ? value : 'N/A';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getDefaultForumPosts() {
+      return currentLang === 'zh'
+        ? [
+            {
+              id: 'seed-parent',
+              role: 'parent',
+              name: '家長分享',
+              topic: '如何開始選校？',
+              message: '大家通常會先比較分區、學校類型還是校風？歡迎分享你的方法。',
+              createdAt: '2026-04-05T09:00:00.000Z'
+            },
+            {
+              id: 'seed-student',
+              role: 'student',
+              name: '學生交流',
+              topic: '哪間學校網站最清楚介紹校園生活？',
+              message: '如果你有看過介紹課外活動或學生支援較詳細的學校網站，歡迎推薦。',
+              createdAt: '2026-04-05T10:30:00.000Z'
+            }
+          ]
+        : [
+            {
+              id: 'seed-parent',
+              role: 'parent',
+              name: 'Parent guide',
+              topic: 'How do you begin shortlisting schools?',
+              message: 'Do you compare district, school type, or school culture first? Feel free to share what helped your family.',
+              createdAt: '2026-04-05T09:00:00.000Z'
+            },
+            {
+              id: 'seed-student',
+              role: 'student',
+              name: 'Student voice',
+              topic: 'Which schools explain student life clearly?',
+              message: 'If you found a school website with good activity or campus-life information, please share it here.',
+              createdAt: '2026-04-05T10:30:00.000Z'
+            }
+          ];
+    }
+
+    function saveForumPosts() {
+      try {
+        localStorage.setItem('hk-school-forum-posts', JSON.stringify((forumPosts || []).slice(0, 80)));
+      } catch {
+        // Ignore local storage errors for forum posts.
+      }
+    }
+
+    function forumRoleText(role) {
+      return role === 'student' ? t('forumRoleStudent') : t('forumRoleParent');
+    }
+
+    function formatForumTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toLocaleString(currentLang === 'zh' ? 'zh-HK' : 'en-HK', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function updateForumFilterButtons() {
+      const buttonMap = {
+        all: $('forumFilterAllBtn'),
+        parent: $('forumFilterParentBtn'),
+        student: $('forumFilterStudentBtn')
+      };
+
+      Object.entries(buttonMap).forEach(([role, button]) => {
+        if (!button) return;
+        const active = forumRoleFilter === role;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    }
+
+    function setForumRoleFilter(role) {
+      forumRoleFilter = ['all', 'parent', 'student'].includes(role) ? role : 'all';
+      renderForumPosts();
+    }
+
+    function renderForumPosts() {
+      const panel = $('forumPosts');
+      if (!panel) return;
+
+      updateForumFilterButtons();
+      const posts = (Array.isArray(forumPosts) ? forumPosts : [])
+        .filter((post) => forumRoleFilter === 'all' ? true : post.role === forumRoleFilter)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      if (!posts.length) {
+        panel.innerHTML = `
+          <div class="empty-state rounded-2xl p-6 text-center text-gray-600">
+            <h3 class="text-base font-semibold text-slate-800 mb-2">${t('forumNoPostsTitle')}</h3>
+            <p>${t('forumNoPostsText')}</p>
+          </div>
+        `;
+        return;
+      }
+
+      panel.innerHTML = posts.map((post) => {
+        const displayName = post.name || (post.role === 'student' ? t('forumGuestStudent') : t('forumGuestParent'));
+        return `
+          <article class="forum-post">
+            <h3 class="forum-post-topic">${escapeHtml(post.topic)}</h3>
+            <div class="forum-post-meta">
+              <span class="forum-role-badge ${post.role === 'student' ? 'is-student' : 'is-parent'}">${forumRoleText(post.role)}</span>
+              <span>${escapeHtml(displayName)}</span>
+              <span>•</span>
+              <span>${escapeHtml(formatForumTime(post.createdAt))}</span>
+            </div>
+            <p class="forum-post-message">${escapeHtml(post.message)}</p>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function clearForumComposer(resetStatus = true) {
+      const roleEl = $('forumRole');
+      const nameEl = $('forumName');
+      const topicEl = $('forumTopic');
+      const messageEl = $('forumMessage');
+      if (roleEl) roleEl.value = 'parent';
+      if (nameEl) nameEl.value = '';
+      if (topicEl) topicEl.value = '';
+      if (messageEl) messageEl.value = '';
+      if (resetStatus) setText('forumStatus', t('forumStatusReady'));
+    }
+
+    async function loadForumPosts() {
+      setText('forumStatus', t('forumStatusLoading'));
+
+      forumPosts = Array.isArray(forumPosts) && forumPosts.length ? forumPosts : getDefaultForumPosts();
+      saveForumPosts();
+      renderForumPosts();
+
+      try {
+        const response = await fetch(forumApiUrl, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`Forum load failed (${response.status})`);
+        const data = await response.json();
+        if (Array.isArray(data.posts) && data.posts.length) {
+          forumPosts = data.posts;
+          saveForumPosts();
+          renderForumPosts();
+        }
+        setText('forumStatus', t('forumStatusOnline'));
+      } catch {
+        setText('forumStatus', t('forumStatusOffline'));
+      }
+    }
+
+    async function submitForumPost() {
+      const roleEl = $('forumRole');
+      const nameEl = $('forumName');
+      const topicEl = $('forumTopic');
+      const messageEl = $('forumMessage');
+      const role = roleEl?.value === 'student' ? 'student' : 'parent';
+      const rawName = (nameEl?.value || '').trim();
+      const name = rawName || (role === 'student' ? t('forumGuestStudent') : t('forumGuestParent'));
+      const topic = (topicEl?.value || '').trim();
+      const message = (messageEl?.value || '').trim();
+
+      if (!topic || !message) {
+        setText('forumStatus', t('forumStatusValidation'));
+        return;
+      }
+
+      setText('forumStatus', t('forumStatusPosting'));
+
+      try {
+        const response = await fetch(forumApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role, name, topic, message })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Unable to post');
+        forumPosts = Array.isArray(data.posts) ? data.posts : [data.post, ...forumPosts];
+        saveForumPosts();
+        renderForumPosts();
+        clearForumComposer(false);
+        setText('forumStatus', t('forumStatusPosted'));
+      } catch {
+        forumPosts = [{
+          id: `local-${Date.now()}`,
+          role,
+          name,
+          topic,
+          message,
+          createdAt: new Date().toISOString()
+        }, ...forumPosts].slice(0, 80);
+        saveForumPosts();
+        renderForumPosts();
+        clearForumComposer(false);
+        setText('forumStatus', t('forumStatusOfflinePosted'));
+      }
+    }
+
+    function getSchoolSearchText(school) {
+      if (!school || typeof school !== 'object') return '';
+      const cached = schoolSearchCache.get(school);
+      if (cached) return cached;
+
+      const searchText = [
+        school['ENGLISH NAME'],
+        school['中文名稱'],
+        school.DISTRICT,
+        school['分區'],
+        school['ENGLISH ADDRESS'],
+        school['中文地址'],
+        school.RELIGION,
+        school['宗教'],
+        school['SCHOOL LEVEL']
+      ].join(' ').toLowerCase();
+
+      schoolSearchCache.set(school, searchText);
+      return searchText;
+    }
+
+    function isMeaningfulValue(value) {
+      const text = safeValue(value).trim().toUpperCase();
+      return ![
+        'N/A',
+        'N.A.',
+        'NOT APPLICABLE',
+        'NOT APPLICABLE.',
+        'NOT APPLICABLE / N.A.',
+        'OTHERS',
+        'UNKNOWN',
+        '無',
+        '沒有',
+        '不適用',
+        '未有資料',
+        '沒有資料'
+      ].includes(text);
+    }
+
+    function schoolLevelText(school) {
+      return currentLang === 'en'
+        ? safeValue(school['SCHOOL LEVEL'])
+        : safeValue(school['學校類型'] || school['SCHOOL LEVEL']);
+    }
+
+    function schoolTypeBadgeClass(school) {
+      const value = schoolLevelText(school).toLowerCase();
+      if (/幼稚|kindergarten/.test(value)) return 'type-badge type-badge-blue';
+      if (/中學|secondary/.test(value)) return 'type-badge type-badge-purple';
+      if (/職業|vocational/.test(value)) return 'type-badge type-badge-orange';
+      if (/小學|primary/.test(value)) return 'type-badge type-badge-green';
+      if (/特殊|special/.test(value)) return 'type-badge type-badge-rose';
+      return 'type-badge type-badge-slate';
+    }
+
+    function hasCoordinates(school) {
+      const lat = Number(school.LATITUDE);
+      const lng = Number(school.LONGITUDE);
+      return Number.isFinite(lat) && Number.isFinite(lng);
+    }
+
+    function calculateDistanceKm(lat1, lng1, lat2, lng2) {
+      const toRad = (value) => value * Math.PI / 180;
+      const earthRadiusKm = 6371;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a = Math.sin(dLat / 2) ** 2
+        + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+      return earthRadiusKm * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    }
+
+    function formatDistanceText(distanceKm) {
+      if (!Number.isFinite(distanceKm)) return '';
+      const amount = distanceKm < 10 ? distanceKm.toFixed(1) : Math.round(distanceKm).toString();
+      return `${amount} ${currentLang === 'zh' ? '公里' : 'km'}`;
+    }
+
+    function walkingTimeText(distanceKm) {
+      if (!Number.isFinite(distanceKm)) return '';
+      const minutes = Math.max(3, Math.round(distanceKm * 12));
+      return currentLang === 'zh' ? `步行約${minutes}分鐘` : `~${minutes} min walk`;
+    }
+
+    function nearbyMetaText(distanceKm) {
+      if (!Number.isFinite(distanceKm)) return '';
+      return `${formatDistanceText(distanceKm)} • ${walkingTimeText(distanceKm)}`;
+    }
+
+    function markerColorForSchool(school) {
+      const category = safeValue(school['ENGLISH CATEGORY']).toLowerCase();
+      const level = safeValue(school['SCHOOL LEVEL']).toLowerCase();
+
+      if (/international/.test(category)) return '#f97316';
+      if (/kindergarten/.test(level)) return '#2563eb';
+      if (/secondary/.test(level)) return '#7c3aed';
+      if (/primary/.test(level)) return '#16a34a';
+      return '#334155';
+    }
+
+    function schoolMarkerIcon(school) {
+      const color = markerColorForSchool(school);
+      return L.divIcon({
+        className: 'school-pin-icon',
+        html: `<span class="school-pin" style="background:${color}"></span>`,
+        iconSize: [18, 24],
+        iconAnchor: [9, 22],
+        popupAnchor: [0, -18]
+      });
+    }
+
+    function showSchoolFromMap(schoolId) {
+      const school = visibleSchools.find(item => getSchoolId(item) === schoolId) || schools.find(item => getSchoolId(item) === schoolId);
+      if (school) showDetail(school);
+    }
+
+    function popupPreviewHtml(school) {
+      const schoolId = encodeURIComponent(getSchoolId(school));
+      const distanceText = typeof school.__distanceKm === 'number'
+        ? `<div class="map-preview-meta">📍 ${t('nearbyBadge')} • ${nearbyMetaText(school.__distanceKm)}</div>`
+        : '';
+
+      return `
+        <div class="space-y-2">
+          <div class="map-preview-title">${schoolNameText(school)}</div>
+          <div class="map-preview-meta">${textFor(school, 'DISTRICT', '分區')} • ${schoolLevelText(school)}</div>
+          ${distanceText}
+          <button type="button" onclick="showSchoolFromMap(decodeURIComponent('${schoolId}'))" class="map-preview-action">${t('viewDetails')}</button>
+        </div>
+      `;
+    }
+
+    function quickInfoTags(school) {
+      const category = safeValue(school['ENGLISH CATEGORY']);
+      const finance = safeValue(school['FINANCE TYPE']);
+      const religion = safeValue(school.RELIGION);
+      const tags = [];
+      const seenLabels = new Set();
+
+      const hasMeaningfulReligion = isMeaningfulValue(religion);
+
+      function addTag(label, className) {
+        if (!label || seenLabels.has(label)) return;
+        seenLabels.add(label);
+        tags.push({ label, className });
+      }
+
+      if (/international schools/i.test(category)) {
+        addTag(currentLang === 'zh' ? '國際學校' : 'International', 'quick-tag quick-tag-indigo');
+      } else if (/english schools foundation/i.test(category) || /ENGLISH SCHOOLS FOUNDATION/i.test(finance)) {
+        addTag(currentLang === 'zh' ? '英基學校' : 'ESF', 'quick-tag quick-tag-sky');
+      } else {
+        addTag(currentLang === 'zh' ? '本地學校' : 'Local school', 'quick-tag quick-tag-slate');
+      }
+
+      if (/DIRECT SUBSIDY SCHEME/i.test(finance)) {
+        addTag(currentLang === 'zh' ? '直資' : 'DSS', 'quick-tag quick-tag-indigo');
+      } else if (/PRIVATE/i.test(finance)) {
+        addTag(currentLang === 'zh' ? '私立' : 'Private', 'quick-tag quick-tag-sky');
+      } else if (/GOVERNMENT/i.test(finance)) {
+        addTag(currentLang === 'zh' ? '官立' : 'Government', 'quick-tag quick-tag-slate');
+      } else if (/AIDED|CAPUT/i.test(finance)) {
+        addTag(currentLang === 'zh' ? '資助' : 'Aided', 'quick-tag quick-tag-indigo');
+      }
+
+      if (hasMeaningfulReligion && /PROTESTANTISM|CHRISTIANITY/i.test(religion)) {
+        addTag(currentLang === 'zh' ? '基督教' : 'Christian', 'quick-tag quick-tag-emerald');
+      } else if (hasMeaningfulReligion && /CATHOLICISM/i.test(religion)) {
+        addTag(currentLang === 'zh' ? '天主教' : 'Catholic', 'quick-tag quick-tag-rose');
+      } else if (hasMeaningfulReligion && /BUDDHISM/i.test(religion)) {
+        addTag(currentLang === 'zh' ? '佛教' : 'Buddhist', 'quick-tag quick-tag-orange');
+      } else if (hasMeaningfulReligion && /ISLAM/i.test(religion)) {
+        addTag(currentLang === 'zh' ? '伊斯蘭教' : 'Islamic', 'quick-tag quick-tag-teal');
+      }
+
+      return tags.slice(0, 3);
+    }
+
+    function quickInfoTagsHtml(school) {
+      const tags = quickInfoTags(school);
+      if (!tags.length) return '';
+      return `<div class="flex flex-wrap gap-2 mt-3">${tags.map(tag => `<span class="${tag.className}">${tag.label}</span>`).join('')}</div>`;
+    }
+
+    function phoneText(school) {
+      return currentLang === 'en'
+        ? safeValue(school.TELEPHONE)
+        : safeValue(school['聯絡電話'] || school.TELEPHONE);
+    }
+
+    function isCompared(school) {
+      return compareIds.includes(getSchoolId(school));
+    }
+
+    function financeTypeText(school) {
+      return textFor(school, 'FINANCE TYPE', '資助種類');
+    }
+
+    function categoryText(school) {
+      return textFor(school, 'ENGLISH CATEGORY', '中文類別');
+    }
+
+    function curriculumText(school) {
+      const category = safeValue(school['ENGLISH CATEGORY']);
+      const finance = safeValue(school['FINANCE TYPE']);
+      if (/international schools/i.test(category)) return t('compareInternationalCurriculum');
+      if (/english schools foundation/i.test(category) || /ENGLISH SCHOOLS FOUNDATION/i.test(finance)) return t('compareEsfCurriculum');
+      return t('compareLocalCurriculum');
+    }
+
+    function instructionText(school) {
+      const category = safeValue(school['ENGLISH CATEGORY']);
+      const finance = safeValue(school['FINANCE TYPE']);
+      if (/international schools/i.test(category) || /ENGLISH SCHOOLS FOUNDATION/i.test(finance)) {
+        return t('compareMainlyEnglish');
+      }
+      return t('compareCheckWebsite');
+    }
+
+    function approximateFeesText(school) {
+      const category = safeValue(school['ENGLISH CATEGORY']);
+      const finance = safeValue(school['FINANCE TYPE']);
+      if (/PRIVATE|DIRECT SUBSIDY SCHEME|PRIVATE INDEPENDENT SCH SCHEME|ENGLISH SCHOOLS FOUNDATION/i.test(finance) || /international schools/i.test(category)) {
+        return t('compareSchoolBasedFees');
+      }
+      return t('comparePublicFunding');
+    }
+
+    function studentTeacherRatioText() {
+      return t('compareNotListed');
+    }
+
+    function throughTrainText() {
+      return t('compareLikelyNo');
+    }
+
+    function compareButtonText(schoolId) {
+      const compareIndex = compareIds.indexOf(schoolId);
+      return compareIndex >= 0 ? `${t('compareLabel')}(${compareIndex + 1})` : t('compareLabel');
+    }
+
+    function updateComparePanel(messageKey) {
+      const selectedSchools = compareIds
+        .map((id) => schools.find((school) => getSchoolId(school) === id))
+        .filter(Boolean);
+      compareIds = selectedSchools.map((school) => getSchoolId(school));
+      saveCompareSelection();
+
+      setText('compareTitle', t('compareTitle'));
+      setText('compareIntro', t('compareIntro'));
+      setText('compareCount', t('compareCount', { count: selectedSchools.length }));
+      setText('openCompareBtn', t('compareButton'));
+      setText('clearCompareBtn', t('compareClear'));
+      setText('compareModalClearBtn', t('compareClear'));
+      setText('compareHint', messageKey ? t(messageKey) : t('compareHint'));
+
+      const openBtn = $('openCompareBtn');
+      const clearBtn = $('clearCompareBtn');
+      if (openBtn) openBtn.disabled = selectedSchools.length < 2;
+      if (clearBtn) clearBtn.disabled = !selectedSchools.length;
+    }
+
+    function clearCompareSelection() {
+      compareIds = [];
+      saveCompareSelection();
+      closeCompareModal();
+      updateComparePanel();
+      updateVisibleCardStates();
+    }
+
+    function toggleCompareSelection(school) {
+      const id = getSchoolId(school);
+      if (compareIds.includes(id)) {
+        compareIds = compareIds.filter((item) => item !== id);
+        updateComparePanel();
+      } else {
+        if (compareIds.length >= 4) {
+          updateComparePanel('compareLimit');
+          return;
+        }
+        compareIds = [...compareIds, id];
+        updateComparePanel();
+      }
+      updateVisibleCardStates();
+      closeCompareModal();
+    }
+
+    function openCompareModal() {
+      closeSidebarDrawer();
+      const compareSchools = compareIds
+        .map((id) => schools.find((school) => getSchoolId(school) === id))
+        .filter(Boolean);
+
+      if (compareSchools.length < 2) {
+        updateComparePanel('compareNeedTwo');
+        return;
+      }
+
+      const displayValue = (value) => {
+        if (typeof value !== 'string') return value || t('compareNotListed');
+        const trimmed = value.trim();
+        return trimmed && trimmed !== 'N/A' ? trimmed : t('compareNotListed');
+      };
+
+      const rows = [
+        { label: t('compareRowDistrict'), values: compareSchools.map((school) => textFor(school, 'DISTRICT', '分區')) },
+        { label: t('compareRowLevel'), values: compareSchools.map((school) => schoolLevelText(school)) },
+        { label: t('compareRowType'), values: compareSchools.map((school) => categoryText(school)) },
+        { label: t('compareRowFinance'), values: compareSchools.map((school) => financeTypeText(school)) },
+        { label: t('compareRowCurriculum'), values: compareSchools.map((school) => curriculumText(school)) },
+        { label: t('compareRowLanguage'), values: compareSchools.map((school) => instructionText(school)) },
+        { label: t('compareRowReligion'), values: compareSchools.map((school) => textFor(school, 'RELIGION', '宗教')) },
+        { label: t('compareRowFees'), values: compareSchools.map((school) => approximateFeesText(school)) },
+        { label: t('compareRowThroughTrain'), values: compareSchools.map(() => throughTrainText()) },
+        { label: t('compareRowSession'), values: compareSchools.map((school) => textFor(school, 'SESSION', '學校授課時間')) },
+        { label: t('compareRowGender'), values: compareSchools.map((school) => textFor(school, 'STUDENTS GENDER', '就讀學生性別')) },
+        { label: t('compareRowRatio'), values: compareSchools.map(() => studentTeacherRatioText()) },
+        { label: t('compareRowPhone'), values: compareSchools.map((school) => phoneText(school)) },
+        { label: t('compareRowWebsite'), values: compareSchools.map((school) => {
+          const website = safeValue(school.WEBSITE);
+          return website !== 'N/A'
+            ? `<a href="${website}" target="_blank" rel="noopener" class="text-blue-600 underline break-all">${website}</a>`
+            : t('compareNotListed');
+        }) },
+        { label: t('compareRowAddress'), values: compareSchools.map((school) => cleanAddressText(textFor(school, 'ENGLISH ADDRESS', '中文地址'))) }
+      ];
+
+      setText('compareModalEyebrow', t('compareModalEyebrow'));
+      setText('compareModalTitle', t('compareModalTitle'));
+      setText('compareModalIntro', t('compareModalIntro'));
+      setText('compareModalClearBtn', t('compareClear'));
+      setHtml('compareSelectionSummary', compareSchools.map((school) => `
+        <span class="compare-summary-chip">🏫 ${schoolNameText(school)}</span>
+      `).join(''));
+      setHtml('compareTableWrap', `
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th class="compare-row-label">${t('compareCriteria')}</th>
+              ${compareSchools.map((school) => `
+                <th class="compare-column-head">
+                  <div class="compare-school-head">
+                    <div class="compare-school-name">${schoolNameText(school)}</div>
+                    <div class="compare-school-sub">${schoolSecondaryNameText(school) || categoryText(school)}</div>
+                  </div>
+                </th>
+              `).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => `
+              <tr>
+                <th class="compare-row-label">${row.label}</th>
+                ${row.values.map((value) => `<td>${displayValue(value)}</td>`).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `);
+
+      const modal = $('compareModal');
+      if (modal) modal.classList.remove('hidden');
+      document.body.classList.add('page-locked');
+    }
+
+    function closeCompareModal() {
+      const modal = $('compareModal');
+      if (modal) modal.classList.add('hidden');
+      document.body.classList.remove('page-locked');
+    }
+
+    function schoolNameText(school) {
+      const englishName = safeValue(school['ENGLISH NAME']);
+      const chineseName = safeValue(school['中文名稱']);
+      return currentLang === 'en'
+        ? (englishName !== 'N/A' ? englishName : chineseName)
+        : (chineseName !== 'N/A' ? chineseName : englishName);
+    }
+
+    function schoolSecondaryNameText(school) {
+      const englishName = safeValue(school['ENGLISH NAME']);
+      const chineseName = safeValue(school['中文名稱']);
+      if (englishName === 'N/A' || chineseName === 'N/A') return '';
+      return currentLang === 'en' ? chineseName : englishName;
+    }
+
+    function getSchoolId(school) {
+      if (!school || typeof school !== 'object') return '';
+      const cachedId = schoolIdCache.get(school);
+      if (cachedId) return cachedId;
+
+      const id = [safeValue(school['ENGLISH NAME']), safeValue(school.DISTRICT), safeValue(school['SCHOOL LEVEL'])].join('|');
+      schoolIdCache.set(school, id);
+      return id;
+    }
+
+    function getSchoolDedupKey(school) {
+      return [
+        safeValue(school['ENGLISH NAME']),
+        safeValue(school['中文名稱']),
+        safeValue(school.DISTRICT),
+        safeValue(school['SCHOOL LEVEL'])
+      ].join('|');
+    }
+
+    function getSchoolQualityScore(school) {
+      let score = 0;
+      const address = safeValue(school['ENGLISH ADDRESS']);
+      const phone = safeValue(school.TELEPHONE);
+      const website = safeValue(school.WEBSITE);
+
+      if (phone !== 'N/A' && phone !== 'N.A.') score += 3;
+      if (website !== 'N/A' && website !== 'N.A.') score += 2;
+      if (!/\(FROM|\(UNTIL/i.test(address)) score += 1;
+      return score;
+    }
+
+    function mergeSchoolRecords(primary, secondary) {
+      const merged = { ...primary };
+
+      Object.keys(secondary).forEach((key) => {
+        const currentValue = safeValue(merged[key]);
+        const candidateValue = safeValue(secondary[key]);
+        if (currentValue === 'N/A' && candidateValue !== 'N/A') {
+          merged[key] = secondary[key];
+        }
+      });
+
+      return merged;
+    }
+
+    function deduplicateSchools(records) {
+      const bestByKey = new Map();
+
+      records.forEach((school) => {
+        const key = getSchoolDedupKey(school);
+        const existing = bestByKey.get(key);
+
+        if (!existing) {
+          bestByKey.set(key, { ...school });
+          return;
+        }
+
+        if (getSchoolQualityScore(school) > getSchoolQualityScore(existing)) {
+          bestByKey.set(key, mergeSchoolRecords(school, existing));
+        } else {
+          bestByKey.set(key, mergeSchoolRecords(existing, school));
+        }
+      });
+
+      return [...bestByKey.values()];
+    }
+
+    function saveFavorites() {
+      localStorage.setItem('hk-school-favorites', JSON.stringify(favoriteIds));
+    }
+
+    function saveCompareSelection() {
+      localStorage.setItem('hk-school-compare', JSON.stringify((compareIds || []).slice(0, 4)));
+    }
+
+    function isFavorite(school) {
+      return favoriteIds.includes(getSchoolId(school));
+    }
+
+    function updateVisibleCardStates() {
+      const list = $('list');
+      if (!list) return;
+
+      const favoriteSet = new Set(favoriteIds);
+      const compareSet = new Set(compareIds);
+      const saveLabel = t('save');
+      const savedLabel = t('saved');
+
+      list.querySelectorAll('.school-card').forEach((card) => {
+        const schoolId = card.dataset.schoolId;
+        if (!schoolId) return;
+
+        const compareBtn = card.querySelector('.compare-toggle');
+        if (compareBtn) {
+          const compared = compareSet.has(schoolId);
+          compareBtn.setAttribute('aria-pressed', compared ? 'true' : 'false');
+          compareBtn.className = `compare-toggle px-3 py-2 rounded-lg border text-sm font-medium ${compared ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-700'}`;
+          compareBtn.innerHTML = `<span aria-hidden="true">${compared ? '✓' : '+'}</span><span>${compareButtonText(schoolId)}</span>`;
+        }
+
+        const favoriteBtn = card.querySelector('.favorite-toggle');
+        if (favoriteBtn) {
+          favoriteBtn.textContent = favoriteSet.has(schoolId) ? savedLabel : saveLabel;
+        }
+      });
+    }
+
+    function toggleFavorite(school) {
+      const id = getSchoolId(school);
+      if (favoriteIds.includes(id)) {
+        favoriteIds = favoriteIds.filter(item => item !== id);
+      } else {
+        favoriteIds.unshift(id);
+      }
+      saveFavorites();
+      renderFavoritesPanel();
+
+      if (showFavoritesOnly) {
+        filter();
+        return;
+      }
+
+      updateVisibleCardStates();
+    }
+
+    function toggleFavoritesOnly() {
+      showFavoritesOnly = !showFavoritesOnly;
+      setText('favoritesToggleBtn', showFavoritesOnly ? t('savedOnlyOn') : t('savedOnlyOff'));
+      filter();
+    }
+
+    function setSidebarDrawerState(open) {
+      const sidebar = $('infoSidebar');
+      const overlay = $('sidebarOverlay');
+      const trigger = $('sidebarDrawerBtn');
+      const mobileTrigger = $('mobileSavedAction');
+      if (!sidebar || !overlay) return;
+
+      if (window.innerWidth >= 1024) {
+        sidebarDrawerOpen = false;
+        sidebar.classList.remove('is-open');
+        overlay.classList.remove('is-open');
+        document.body.classList.remove('sidebar-open');
+        sidebar.setAttribute('aria-hidden', 'false');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        if (mobileTrigger) {
+          mobileTrigger.setAttribute('aria-expanded', 'false');
+          mobileTrigger.classList.remove('is-active');
+        }
+        return;
+      }
+
+      sidebarDrawerOpen = !!open;
+      sidebar.classList.toggle('is-open', sidebarDrawerOpen);
+      overlay.classList.toggle('is-open', sidebarDrawerOpen);
+      document.body.classList.toggle('sidebar-open', sidebarDrawerOpen);
+      sidebar.setAttribute('aria-hidden', sidebarDrawerOpen ? 'false' : 'true');
+      if (trigger) trigger.setAttribute('aria-expanded', sidebarDrawerOpen ? 'true' : 'false');
+      if (mobileTrigger) {
+        mobileTrigger.setAttribute('aria-expanded', sidebarDrawerOpen ? 'true' : 'false');
+        mobileTrigger.classList.toggle('is-active', sidebarDrawerOpen);
+      }
+    }
+
+    function toggleSidebarDrawer() {
+      setSidebarDrawerState(!sidebarDrawerOpen);
+    }
+
+    function closeSidebarDrawer() {
+      setSidebarDrawerState(false);
+    }
+
+    function flashMenuTarget(element) {
+      if (!element) return;
+      element.classList.remove('menu-target-flash');
+      void element.offsetWidth;
+      element.classList.add('menu-target-flash');
+      window.setTimeout(() => element.classList.remove('menu-target-flash'), 1400);
+    }
+
+    function openComparePage() {
+      saveCompareSelection();
+      window.location.href = 'compare.html';
+    }
+
+    function openForumPage() {
+      window.location.href = 'forum.html';
+    }
+
+    function scrollToCompareSection() {
+      openComparePage();
+    }
+
+    function scrollToForumSection() {
+      openForumPage();
+    }
+
+    function setMobileFilterState(collapsed) {
+      const panel = $('filtersPanel');
+      const btn = $('filtersCollapseBtn');
+      const quickBtn = $('mobileFilterBtn');
+      const quickAction = $('mobileFilterAction');
+      if (!panel || !btn) return;
+
+      if (window.innerWidth >= 768) {
+        panel.classList.remove('is-collapsed');
+        btn.textContent = t('hideFilters');
+        if (quickBtn) quickBtn.textContent = t('showFilters');
+        if (quickAction) quickAction.classList.remove('is-active');
+        return;
+      }
+
+      panel.classList.toggle('is-collapsed', collapsed);
+      const label = collapsed ? t('showFilters') : t('hideFilters');
+      btn.textContent = label;
+      if (quickBtn) quickBtn.textContent = label;
+      if (quickAction) quickAction.classList.toggle('is-active', !collapsed);
+    }
+
+    function toggleFilterPanel() {
+      const panel = $('filtersPanel');
+      if (!panel) return;
+      const shouldCollapse = !panel.classList.contains('is-collapsed');
+      setMobileFilterState(shouldCollapse);
+      if (!shouldCollapse) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function populateSelect(id, values, defaultLabel) {
+      const select = $(id);
+      if (!select) return;
+      select.innerHTML = `<option value="">${defaultLabel}</option>`;
+      values.forEach(item => {
+        const value = typeof item === 'object' ? item.value : item;
+        const label = typeof item === 'object' ? item.label : item;
+        if (!value) return;
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        select.appendChild(option);
+      });
+    }
+
+    function renderStats() {
+      setText('totalSchools', schools.length.toLocaleString());
+      setText('totalDistricts', new Set(schools.map(s => s.DISTRICT).filter(Boolean)).size);
+      setText('totalLevels', new Set(schools.map(s => s['SCHOOL LEVEL']).filter(Boolean)).size);
+    }
+
+    function buildLocalizedOptions(enKey, zhKey) {
+      const optionMap = new Map();
+
+      schools.forEach((school) => {
+        const value = safeValue(school[enKey]);
+        if (value === 'N/A') return;
+        const zhValue = safeValue(school[zhKey]);
+        optionMap.set(value, currentLang === 'en' || zhValue === 'N/A' ? value : zhValue);
+      });
+
+      return [...optionMap.entries()]
+        .sort((a, b) => String(a[1]).localeCompare(String(b[1]), currentLang === 'en' ? 'en' : 'zh-Hant'))
+        .map(([value, label]) => ({ value, label }));
+    }
+
+    function populateFilters() {
+      const selectedDistrict = $('districtFilter')?.value || '';
+      const selectedLevel = $('levelFilter')?.value || '';
+      const selectedReligion = $('religionFilter')?.value || '';
+
+      populateSelect('districtFilter', buildLocalizedOptions('DISTRICT', '分區'), t('allDistricts'));
+      populateSelect('levelFilter', buildLocalizedOptions('SCHOOL LEVEL', '學校類型'), t('allLevels'));
+      populateSelect('religionFilter', buildLocalizedOptions('RELIGION', '宗教'), t('allReligions'));
+
+      if ($('districtFilter')) $('districtFilter').value = selectedDistrict;
+      if ($('levelFilter')) $('levelFilter').value = selectedLevel;
+      if ($('religionFilter')) $('religionFilter').value = selectedReligion;
+    }
+
+    function renderFavoritesPanel() {
+      const panel = $('favoritesPanel');
+      const count = $('favoritesCount');
+      if (!panel || !count) return;
+
+      const savedSchools = schools.filter(school => favoriteIds.includes(getSchoolId(school)));
+      count.textContent = t('favoritesCount', { count: savedSchools.length });
+
+      if (!savedSchools.length) {
+        panel.innerHTML = `<p>${t('favoritesEmpty')}</p>`;
+        return;
+      }
+
+      panel.innerHTML = '';
+      savedSchools.slice(0, 6).forEach((school) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'w-full text-left border border-gray-200 rounded-xl p-3 hover:border-blue-300 hover:bg-blue-50 transition';
+        btn.innerHTML = `
+          <div class="font-medium text-slate-800">${schoolNameText(school)}</div>
+          <div class="text-xs text-gray-500 mt-1">${textFor(school, 'DISTRICT', '分區')} • ${schoolLevelText(school)}</div>
+        `;
+        btn.onclick = () => showDetail(school);
+        panel.appendChild(btn);
+      });
+
+      if (savedSchools.length > 6) {
+        const note = document.createElement('p');
+        note.className = 'text-xs text-gray-500 pt-1';
+        note.textContent = t('showingFirstSaved');
+        panel.appendChild(note);
+      }
+    }
+
+    function renderList(filteredSchools = schools) {
+      const list = $('list');
+      const summary = $('resultSummary');
+      visibleSchools = filteredSchools.slice();
+      const visibleCount = Math.min(filteredSchools.length, renderedSchoolLimit);
+
+      if (summary) {
+        const totalCountText = filteredSchools.length.toLocaleString();
+        const visibleCountText = visibleCount.toLocaleString();
+        const baseSummary = nearbyModeActive
+          ? (showFavoritesOnly
+              ? t('nearbyResultsSaved', { count: totalCountText })
+              : t('nearbyResults', { count: totalCountText }))
+          : (showFavoritesOnly
+              ? t('resultsFoundSaved', { count: totalCountText })
+              : t('resultsFound', { count: totalCountText }));
+        summary.textContent = nearbyModeActive ? `${baseSummary} • ${t('closestFirst')}` : baseSummary;
+        if (filteredSchools.length > visibleCount) {
+          summary.textContent = `${summary.textContent} • ${t('showingVisibleResults', { visible: visibleCountText, total: totalCountText })}`;
+        }
+      }
+
+      updateBrowseControls();
+      updateComparePanel();
+      renderBrowseMap(filteredSchools);
+
+      if (!list) return;
+      list.innerHTML = '';
+
+      if (!filteredSchools.length) {
+        list.innerHTML = `
+          <div class="empty-state rounded-2xl p-8 text-center text-gray-600">
+            <h3 class="text-lg font-semibold text-slate-800 mb-2">${t('noMatchingTitle')}</h3>
+            <p>${t('noMatchingText')}</p>
+          </div>
+        `;
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      filteredSchools.slice(0, visibleCount).forEach((school) => {
+        const schoolId = getSchoolId(school);
+        const compared = compareIds.includes(schoolId);
+        const primaryName = schoolNameText(school);
+        const secondaryName = schoolSecondaryNameText(school);
+        const secondaryNameHtml = secondaryName ? `<p class="school-subtitle mt-1">${secondaryName}</p>` : '';
+        const quickTags = quickInfoTags(school);
+        const quickTagsHtml = quickTags.length
+          ? `<div class="flex flex-wrap gap-2 mt-3">${quickTags.map(tag => `<span class="${tag.className}">${tag.label}</span>`).join('')}</div>`
+          : '';
+        const hasReligionQuickTag = quickTags.some(tag => /Christian|Catholic|Buddhist|Islamic|基督教|天主教|佛教|伊斯蘭教/.test(tag.label));
+        const district = textFor(school, 'DISTRICT', '分區');
+        const address = cleanAddressText(textFor(school, 'ENGLISH ADDRESS', '中文地址'));
+        const website = safeValue(school.WEBSITE);
+        const websiteHtml = website !== 'N/A'
+          ? `<a href="${website}" target="_blank" rel="noopener" class="text-blue-600 underline">${currentLang === 'zh' ? '前往網站' : 'Visit site'}</a>`
+          : `<span class="text-gray-500">N/A</span>`;
+        const level = schoolLevelText(school);
+        const levelBadgeClass = schoolTypeBadgeClass(school);
+        const religion = textFor(school, 'RELIGION', '宗教');
+        const religionHtml = isMeaningfulValue(religion) && !hasReligionQuickTag ? `<span class="meta-pill">${religion}</span>` : '';
+        const phone = phoneText(school);
+        const savedLabel = isFavorite(school) ? t('saved') : t('save');
+        const isNearbySchool = typeof school.__distanceKm === 'number';
+        const nearbyFlagHtml = isNearbySchool
+          ? `<span class="nearby-flag">📍 ${t('nearbyBadge')}</span>`
+          : '';
+        const distanceHtml = isNearbySchool
+          ? `<span class="meta-pill nearby-meta-pill">📍 ${nearbyMetaText(school.__distanceKm)}</span>`
+          : '';
+
+        const card = document.createElement('article');
+        card.className = `school-card panel rounded-2xl p-5${isNearbySchool ? ' nearby-school-card' : ''}`;
+        card.dataset.schoolId = schoolId;
+        card.innerHTML = `
+          <div class="flex flex-col gap-4">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="school-title">${primaryName}</h3>
+                ${nearbyFlagHtml}
+              </div>
+              ${secondaryNameHtml}
+              ${quickTagsHtml}
+              <div class="flex flex-wrap gap-2 mt-3">
+                <span class="meta-pill">${district}</span>
+                <span class="${levelBadgeClass}">${level}</span>
+                ${religionHtml}
+                ${distanceHtml}
+              </div>
+            </div>
+            <div class="school-card-actions">
+              <button type="button" aria-pressed="${compared ? 'true' : 'false'}" class="compare-toggle px-3 py-2 rounded-lg border text-sm font-medium ${compared ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-700'}"><span aria-hidden="true">${compared ? '✓' : '+'}</span><span>${compareButtonText(schoolId)}</span></button>
+              <button type="button" class="favorite-toggle px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-medium">${savedLabel}</button>
+              <button type="button" class="action-primary px-4 py-3 rounded-lg text-white text-sm font-semibold">${t('viewDetails')}</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-sm text-gray-700">
+            <div>
+              <div class="info-label">${t('address')}</div>
+              <div class="mt-1 icon-value"><span class="info-inline-icon">📍</span><span>${safeValue(address)}</span></div>
+            </div>
+            <div>
+              <div class="info-label">${t('telephone')}</div>
+              <div class="mt-1 icon-value"><span class="info-inline-icon">☎️</span><span>${phone}</span></div>
+            </div>
+            <div>
+              <div class="info-label">${t('website')}</div>
+              <div class="mt-1 icon-value"><span class="info-inline-icon">🌐</span><span>${websiteHtml}</span></div>
+            </div>
+          </div>
+        `;
+        card.onclick = () => showDetail(school);
+        const compareBtn = card.querySelector('.compare-toggle');
+        if (compareBtn) {
+          compareBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleCompareSelection(school);
+          });
+        }
+        const favoriteBtn = card.querySelector('.favorite-toggle');
+        if (favoriteBtn) {
+          favoriteBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleFavorite(school);
+          });
+        }
+        card.querySelectorAll('a').forEach((link) => {
+          link.addEventListener('click', (event) => {
+            event.stopPropagation();
+          });
+        });
+        fragment.appendChild(card);
+      });
+
+      list.appendChild(fragment);
+
+      if (filteredSchools.length > visibleCount) {
+        const loadMoreWrap = document.createElement('div');
+        loadMoreWrap.className = 'empty-state rounded-2xl p-5 text-center text-gray-600';
+        loadMoreWrap.innerHTML = `
+          <p class="mb-3">${t('showingVisibleResults', { visible: visibleCount.toLocaleString(), total: filteredSchools.length.toLocaleString() })}</p>
+          <button type="button" class="action-primary px-4 py-3 rounded-lg text-white text-sm font-semibold">${t('showMoreResults')}</button>
+        `;
+        const loadMoreBtn = loadMoreWrap.querySelector('button');
+        if (loadMoreBtn) {
+          loadMoreBtn.addEventListener('click', () => {
+            renderedSchoolLimit += RENDER_PAGE_SIZE;
+            renderList(filteredSchools);
+          });
+        }
+        list.appendChild(loadMoreWrap);
+      }
+    }
+
+    function updateBrowseControls() {
+      setText('listViewBtn', t('listView'));
+      setText('mapViewBtn', t('mapView'));
+      setText('nearMeBtnText', nearbyModeActive ? t('showAllSchools') : t('schoolsNearMe'));
+      setText('mobileNearbyBtn', nearbyModeActive ? t('showAllSchools') : t('schoolsNearMe'));
+      setText('sidebarDrawerBtn', t('sidebarTools'));
+      setText('mobileSavedBtn', t('sidebarTools'));
+
+      const listBtn = $('listViewBtn');
+      const mapBtn = $('mapViewBtn');
+      const nearBtn = $('nearMeBtn');
+      const mobileNearAction = $('mobileNearbyAction');
+      if (listBtn) listBtn.classList.toggle('is-active', currentViewMode === 'list');
+      if (mapBtn) mapBtn.classList.toggle('is-active', currentViewMode === 'map');
+      if (nearBtn) {
+        nearBtn.classList.toggle('is-active', nearbyModeActive);
+        nearBtn.setAttribute('aria-pressed', nearbyModeActive ? 'true' : 'false');
+      }
+      if (mobileNearAction) {
+        mobileNearAction.classList.toggle('is-active', nearbyModeActive);
+        mobileNearAction.setAttribute('aria-pressed', nearbyModeActive ? 'true' : 'false');
+      }
+
+      if (!nearbyModeActive) {
+        setText('mapHint', t('mapHint'));
+      } else if (nearbyUserPosition) {
+        setText('mapHint', t('nearbyHint'));
+      }
+    }
+
+    function setViewMode(mode) {
+      currentViewMode = mode === 'map' ? 'map' : 'list';
+      const listPanel = $('listViewPanel');
+      const mapPanel = $('mapViewPanel');
+      if (listPanel) listPanel.classList.toggle('hidden', currentViewMode !== 'list');
+      if (mapPanel) mapPanel.classList.toggle('hidden', currentViewMode !== 'map');
+      updateBrowseControls();
+
+      if (currentViewMode === 'map') {
+        renderBrowseMap(visibleSchools);
+        setTimeout(() => {
+          if (browseMapInstance) browseMapInstance.invalidateSize();
+        }, 120);
+      }
+    }
+
+    function renderBrowseMap(filteredSchools = visibleSchools) {
+      visibleSchools = filteredSchools.slice();
+      const mapEl = $('browseMap');
+      if (!mapEl || currentViewMode !== 'map') return;
+
+      if (!browseMapInstance) {
+        browseMapInstance = L.map(mapEl).setView([22.3193, 114.1694], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(browseMapInstance);
+        browseMarkerLayer = L.layerGroup().addTo(browseMapInstance);
+      }
+
+      if (!browseMarkerLayer) {
+        browseMarkerLayer = L.layerGroup().addTo(browseMapInstance);
+      }
+      browseMarkerLayer.clearLayers();
+
+      if (nearbyMarker && browseMapInstance) {
+        browseMapInstance.removeLayer(nearbyMarker);
+        nearbyMarker = null;
+      }
+
+      const markers = [];
+      filteredSchools.filter(hasCoordinates).forEach((school) => {
+        const lat = Number(school.LATITUDE);
+        const lng = Number(school.LONGITUDE);
+        const marker = L.marker([lat, lng], { icon: schoolMarkerIcon(school) });
+        marker.bindPopup(popupPreviewHtml(school));
+        browseMarkerLayer.addLayer(marker);
+        markers.push(marker);
+      });
+
+      if (nearbyUserPosition) {
+        nearbyMarker = L.circleMarker([nearbyUserPosition.lat, nearbyUserPosition.lng], {
+          radius: 8,
+          color: '#0f172a',
+          weight: 2,
+          fillColor: '#38bdf8',
+          fillOpacity: 0.95
+        }).addTo(browseMapInstance).bindPopup(t('yourLocation'));
+        markers.push(nearbyMarker);
+      }
+
+      if (!markers.length) {
+        setText('mapHint', t('mapNoResults'));
+        browseMapInstance.setView([22.3193, 114.1694], 11);
+        return;
+      }
+
+      const bounds = L.featureGroup(markers).getBounds();
+      if (bounds.isValid()) {
+        browseMapInstance.fitBounds(bounds.pad(0.15));
+      }
+    }
+
+    function toggleNearbySchools() {
+      if (nearbyModeActive) {
+        nearbyModeActive = false;
+        nearbyUserPosition = null;
+        filter();
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        setText('mapHint', t('locationNotSupported'));
+        return;
+      }
+
+      setText('nearMeBtnText', t('locating'));
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          nearbyUserPosition = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          nearbyModeActive = true;
+          filter();
+        },
+        () => {
+          nearbyModeActive = false;
+          nearbyUserPosition = null;
+          updateBrowseControls();
+          setText('mapHint', t('locationFailed'));
+        },
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 300000 }
+      );
+    }
+
+    function copyCurrentSchoolInfo() {
+      if (!currentSchool || !navigator.clipboard) return;
+
+      const text = [
+        schoolNameText(currentSchool),
+        `${t('copyDistrict')}: ${textFor(currentSchool, 'DISTRICT', '分區')}`,
+        `${t('copyLevel')}: ${schoolLevelText(currentSchool)}`,
+        `${t('copyReligion')}: ${textFor(currentSchool, 'RELIGION', '宗教')}`,
+        `${t('copyPhone')}: ${phoneText(currentSchool)}`,
+        `${t('copyAddress')}: ${cleanAddressText(textFor(currentSchool, 'ENGLISH ADDRESS', '中文地址'))}`,
+        `${t('copyWebsite')}: ${safeValue(currentSchool.WEBSITE)}`
+      ].join('\n');
+
+      navigator.clipboard.writeText(text)
+        .then(() => setText('copyStatus', t('detailsCopied')))
+        .catch(() => setText('copyStatus', t('copyFailed')));
+    }
+
+    function showDetail(school) {
+      const modalEl = $('modal');
+      const mapEl = $('map');
+      if (!modalEl || !mapEl) return;
+
+      currentSchool = school;
+      modalEl.classList.remove('hidden');
+      document.body.classList.add('page-locked');
+      setText('modalName', schoolNameText(school));
+      setText('modalSubname', schoolSecondaryNameText(school));
+      setHtml('detailDistrict', `<span class="icon-value"><span class="info-inline-icon">📍</span><span>${textFor(school, 'DISTRICT', '分區')}</span></span>`);
+      setHtml('detailLevel', `<span class="icon-value"><span class="info-inline-icon">🎓</span><span>${schoolLevelText(school)}</span></span>`);
+      setHtml('detailReligion', `<span class="icon-value"><span class="info-inline-icon">🕊️</span><span>${textFor(school, 'RELIGION', '宗教')}</span></span>`);
+      setHtml('detailPhone', `<span class="icon-value"><span class="info-inline-icon">☎️</span><span>${phoneText(school)}</span></span>`);
+      setHtml('detailAddress', `<span class="icon-value"><span class="info-inline-icon">📌</span><span>${cleanAddressText(textFor(school, 'ENGLISH ADDRESS', '中文地址'))}</span></span>`);
+
+      const website = safeValue(school.WEBSITE);
+      setHtml('detailWebsite', `
+        ${website !== 'N/A'
+          ? `<div class="icon-value"><span class="info-inline-icon">🌐</span><a href="${website}" target="_blank" rel="noopener" class="text-blue-600 underline break-all">${website}</a></div>`
+          : '<span class="icon-value text-gray-500"><span class="info-inline-icon">🌐</span><span>N/A</span></span>'}
+        <div class="mt-3 flex flex-wrap gap-2">
+          <button onclick="copyCurrentSchoolInfo()" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium">📋 ${t('copyDetails')}</button>
+          ${website !== 'N/A'
+            ? `<a href="${website}" target="_blank" rel="noopener" class="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium">🔗 ${t('visitWebsite')}</a>`
+            : ''}
+        </div>
+        <p id="copyStatus" class="text-xs text-green-600 mt-2"></p>
+      `);
+
+      mapEl.innerHTML = '';
+      const lat = Number(school.LATITUDE);
+      const lng = Number(school.LONGITUDE);
+      if (mapInstance) {
+        mapInstance.remove();
+        mapInstance = null;
+      }
+      if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
+        mapInstance = L.map(mapEl).setView([lat, lng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(mapInstance);
+        L.marker([lat, lng]).addTo(mapInstance);
+      } else {
+        mapEl.innerHTML = `<div class="h-full flex items-center justify-center text-gray-500">${t('locationUnavailable')}</div>`;
+      }
+    }
+
+    function closeModal() {
+      const modalEl = $('modal');
+      const mapEl = $('map');
+      if (modalEl) modalEl.classList.add('hidden');
+      document.body.classList.remove('page-locked');
+      if (mapInstance) {
+        mapInstance.remove();
+        mapInstance = null;
+      }
+      if (mapEl) mapEl.innerHTML = '';
+    }
+
+    function scheduleFilter() {
+      window.clearTimeout(filterTimer);
+      filterTimer = window.setTimeout(() => {
+        filterTimer = null;
+        filter();
+      }, 120);
+    }
+
+    function filter() {
+      renderedSchoolLimit = INITIAL_RENDER_COUNT;
+      const searchEl = $('search');
+      const districtEl = $('districtFilter');
+      const levelEl = $('levelFilter');
+      const religionEl = $('religionFilter');
+      const sortEl = $('sortBy');
+      if (!searchEl || !districtEl || !levelEl || !religionEl || !sortEl) return;
+
+      const term = searchEl.value.toLowerCase().trim();
+      const district = districtEl.value;
+      const level = levelEl.value;
+      const religion = religionEl.value;
+      const sortBy = sortEl.value;
+
+      let filtered = schools.filter((school) => {
+        const haystack = getSchoolSearchText(school);
+
+        return (!term || haystack.includes(term))
+          && (!district || school.DISTRICT === district)
+          && (!level || school['SCHOOL LEVEL'] === level)
+          && (!religion || school.RELIGION === religion);
+      });
+
+      if (showFavoritesOnly) {
+        filtered = filtered.filter(isFavorite);
+      }
+
+      if (nearbyModeActive && nearbyUserPosition) {
+        filtered = filtered
+          .filter(hasCoordinates)
+          .map((school) => ({
+            ...school,
+            __distanceKm: calculateDistanceKm(
+              nearbyUserPosition.lat,
+              nearbyUserPosition.lng,
+              Number(school.LATITUDE),
+              Number(school.LONGITUDE)
+            )
+          }))
+          .sort((a, b) => a.__distanceKm - b.__distanceKm)
+          .slice(0, 80);
+      } else {
+        filtered = filtered.slice();
+
+        filtered.sort((a, b) => {
+          const nameA = schoolNameText(a);
+          const nameB = schoolNameText(b);
+          const locale = currentLang === 'en' ? 'en' : 'zh-Hant';
+
+          if (sortBy === 'district-asc') {
+            return safeValue(textFor(a, 'DISTRICT', '分區')).localeCompare(safeValue(textFor(b, 'DISTRICT', '分區')), locale) || nameA.localeCompare(nameB, locale);
+          }
+          if (sortBy === 'level-asc') {
+            return schoolLevelText(a).localeCompare(schoolLevelText(b), locale) || nameA.localeCompare(nameB, locale);
+          }
+          return nameA.localeCompare(nameB, locale);
+        });
+      }
+
+      renderList(filtered);
+    }
+
+    function resetFilters() {
+      const searchEl = $('search');
+      const districtEl = $('districtFilter');
+      const levelEl = $('levelFilter');
+      const religionEl = $('religionFilter');
+      const sortEl = $('sortBy');
+      if (searchEl) searchEl.value = '';
+      if (districtEl) districtEl.value = '';
+      if (levelEl) levelEl.value = '';
+      if (religionEl) religionEl.value = '';
+      if (sortEl) sortEl.value = 'name-asc';
+      showFavoritesOnly = false;
+      nearbyModeActive = false;
+      nearbyUserPosition = null;
+      setViewMode('list');
+      setText('favoritesToggleBtn', t('savedOnlyOff'));
+      filter();
+    }
+
+    function applyFontSize() {
+      document.documentElement.classList.remove('font-size-large', 'font-size-xlarge');
+      if (currentFontSize === 'large') {
+        document.documentElement.classList.add('font-size-large');
+      } else if (currentFontSize === 'xlarge') {
+        document.documentElement.classList.add('font-size-xlarge');
+      }
+
+      ['normal', 'large', 'xlarge'].forEach((size) => {
+        const buttonId = size === 'normal' ? 'fontSizeNormalBtn' : size === 'large' ? 'fontSizeLargeBtn' : 'fontSizeXLargeBtn';
+        const button = $(buttonId);
+        if (button) {
+          button.classList.toggle('is-active', currentFontSize === size);
+        }
+      });
+    }
+
+    function setFontSize(size) {
+      if (!['normal', 'large', 'xlarge'].includes(size) || currentFontSize === size) return;
+      currentFontSize = size;
+      localStorage.setItem('hk-school-font-size', currentFontSize);
+      window.requestAnimationFrame(() => applyFontSize());
+    }
+
+    function applyLanguageUI() {
+      document.documentElement.lang = currentLang === 'en' ? 'en' : 'zh-Hant';
+      document.title = t('pageHeading');
+      setText('heroEyebrow', t('heroEyebrow'));
+      setText('pageHeading', t('pageHeading'));
+      setText('heroIntro', t('heroIntro'));
+      setText('statsSchoolsLabel', t('schoolsLabel'));
+      setText('statsDistrictsLabel', t('districtsLabel'));
+      setText('statsLevelsLabel', t('levelsLabel'));
+      setText('searchSectionTitle', t('searchSectionTitle'));
+      setText('searchSectionIntro', t('searchSectionIntro'));
+      setText('fontSizeLabel', t('fontSize'));
+      const normalBtn = $('fontSizeNormalBtn');
+      const largeBtn = $('fontSizeLargeBtn');
+      const xlargeBtn = $('fontSizeXLargeBtn');
+      if (normalBtn) normalBtn.title = t('fontNormal');
+      if (largeBtn) largeBtn.title = t('fontLarge');
+      if (xlargeBtn) xlargeBtn.title = t('fontXLarge');
+      setText('resetBtn', t('reset'));
+      setText('sidebarDrawerBtn', t('sidebarTools'));
+      setText('sidebarPanelTitle', t('sidebarPanelTitle'));
+      setText('sidebarCloseBtn', t('closePanel'));
+      setText('keywordSearchLabel', t('keywordSearch'));
+      setText('districtLabel', t('district'));
+      setText('levelLabel', t('schoolLevel'));
+      setText('religionLabel', t('religion'));
+      setText('sortLabel', t('sortResults'));
+      setText('sourcePrefix', t('sourcePrefix'));
+      setText('sourceValue', t('sourceValue'));
+      setText('overviewTitle', t('overviewTitle'));
+      setText('coverageLabel', t('coverageLabel'));
+      setText('coverageText', t('coverageText'));
+      setText('quickMenuLabel', t('quickMenuLabel'));
+      setText('quickMenuIntro', t('quickMenuIntro'));
+      setText('menuCompareText', t('menuCompare'));
+      setText('menuForumText', t('menuForum'));
+      setText('searchableLabel', t('searchableLabel'));
+      setText('searchableText', t('searchableText'));
+      setText('useCaseLabel', t('useCaseLabel'));
+      setText('useCaseText', t('useCaseText'));
+      setText('savedSchoolsTitle', t('savedSchoolsTitle'));
+      setText('infoShownTitle', t('infoShownTitle'));
+      setText('pillDistrict', `📍 ${t('district')}`);
+      setText('pillLevel', currentLang === 'en' ? '🎓 Level' : '🎓 級別');
+      setText('pillReligion', `🕊️ ${t('religion')}`);
+      setText('pillPhone', `☎️ ${t('phone')}`);
+      setText('pillWebsite', `🌐 ${t('website')}`);
+      setText('pillMap', `🗺️ ${t('mapLocation')}`);
+      setText('modalProfileLabel', t('schoolProfile'));
+      setText('detailDistrictLabel', t('district'));
+      setText('detailLevelLabel', t('schoolLevel'));
+      setText('detailReligionLabel', t('religion'));
+      setText('detailPhoneLabel', t('telephone'));
+      setText('detailAddressLabel', t('address'));
+      setText('detailWebsiteLabel', t('officialWebsite'));
+      setText('mapLocationLabel', t('mapLocation'));
+      setText('referenceNoteLabel', t('referenceNote'));
+      setText('referenceText', t('referenceText'));
+      setText('forumTitle', t('forumTitle'));
+      setText('forumIntro', t('forumIntro'));
+      setText('forumLocalNote', t('forumLocalNote'));
+      setText('forumFilterAllBtn', t('forumAll'));
+      setText('forumFilterParentBtn', t('forumParents'));
+      setText('forumFilterStudentBtn', t('forumStudents'));
+      setText('forumRoleLabel', t('forumRoleLabel'));
+      setText('forumNameLabel', t('forumNameLabel'));
+      setText('forumTopicLabel', t('forumTopicLabel'));
+      setText('forumMessageLabel', t('forumMessageLabel'));
+      setText('forumPostBtn', t('forumPostButton'));
+      setText('forumClearBtn', t('forumClearButton'));
+      setText('forumStatus', t('forumStatusReady'));
+      const forumRoleEl = $('forumRole');
+      if (forumRoleEl && forumRoleEl.options.length >= 2) {
+        forumRoleEl.options[0].text = t('forumRoleParent');
+        forumRoleEl.options[1].text = t('forumRoleStudent');
+      }
+      const forumNameEl = $('forumName');
+      const forumTopicEl = $('forumTopic');
+      const forumMessageEl = $('forumMessage');
+      if (forumNameEl) forumNameEl.placeholder = t('forumNamePlaceholder');
+      if (forumTopicEl) forumTopicEl.placeholder = t('forumTopicPlaceholder');
+      if (forumMessageEl) forumMessageEl.placeholder = t('forumMessagePlaceholder');
+      setText('langBtn', currentLang === 'en' ? '中文 / EN' : 'EN / 中文');
+      setText('favoritesToggleBtn', showFavoritesOnly ? t('savedOnlyOn') : t('savedOnlyOff'));
+      updateBrowseControls();
+
+      const searchEl = $('search');
+      if (searchEl) searchEl.placeholder = t('searchPlaceholder');
+      if (schools.length) populateFilters();
+      const sortBy = $('sortBy');
+      if (sortBy && sortBy.options.length >= 3) {
+        sortBy.options[0].text = t('sortName');
+        sortBy.options[1].text = t('sortDistrict');
+        sortBy.options[2].text = t('sortLevel');
+      }
+
+      if (!schools.length) {
+        setText('resultSummary', t('loadingRecords'));
+      }
+      setText('favoritesEmptyText', t('favoritesEmpty'));
+      renderFavoritesPanel();
+      renderForumPosts();
+      updateComparePanel();
+      setText('compareModalEyebrow', t('compareModalEyebrow'));
+      setText('compareModalTitle', t('compareModalTitle'));
+      setText('compareModalIntro', t('compareModalIntro'));
+      setMobileFilterState(window.innerWidth < 768 && $('filtersPanel')?.classList.contains('is-collapsed'));
+    }
+
+    function applyTheme() {
+      document.body.classList.remove('dark');
+      localStorage.removeItem('hk-school-theme');
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'en' ? 'zh' : 'en';
+      localStorage.setItem('hk-school-language', currentLang);
+      applyLanguageUI();
+      applyTheme();
+      renderedSchoolLimit = INITIAL_RENDER_COUNT;
+      setText('resultSummary', t('loadingRecords'));
+      if (uiRefreshToken) window.cancelAnimationFrame(uiRefreshToken);
+      uiRefreshToken = window.requestAnimationFrame(() => {
+        uiRefreshToken = null;
+        filter();
+      });
+    }
+
+    async function loadSchoolData() {
+      try {
+        let records = [];
+        let lastError = new Error('Unable to load school data.');
+
+        for (const source of dataSources) {
+          try {
+            const response = await fetch(source, { cache: 'no-store' });
+            if (!response.ok) {
+              throw new Error(`Unable to load school data (${response.status})`);
+            }
+
+            const data = await response.json();
+            records = Array.isArray(data) ? data : [];
+            if (records.length) {
+              break;
+            }
+
+            throw new Error('No school records returned');
+          } catch (error) {
+            lastError = error;
+          }
+        }
+
+        if (!records.length) {
+          throw lastError;
+        }
+
+        schools = deduplicateSchools(records);
+        renderStats();
+        populateFilters();
+        renderFavoritesPanel();
+        filter();
+      } catch (error) {
+        console.error('School data load failed:', error);
+        setText('resultSummary', `${t('loadFailedPrefix')} ${error.message}`);
+        setHtml('list', `
+          <div class="empty-state rounded-2xl p-8 text-center text-gray-600">
+            <h3 class="text-lg font-semibold text-slate-800 mb-2">${t('dataLoadFailedTitle')}</h3>
+            <p>${t('dataLoadFailedText')}</p>
+          </div>
+        `);
+      }
+    }
+
+    function initializePage() {
+      const searchEl = $('search');
+      const districtEl = $('districtFilter');
+      const levelEl = $('levelFilter');
+      const religionEl = $('religionFilter');
+      const sortEl = $('sortBy');
+      const modalEl = $('modal');
+      const compareModalEl = $('compareModal');
+
+      if (searchEl) searchEl.addEventListener('input', scheduleFilter);
+      if (districtEl) districtEl.addEventListener('change', filter);
+      if (levelEl) levelEl.addEventListener('change', filter);
+      if (religionEl) religionEl.addEventListener('change', filter);
+      if (sortEl) sortEl.addEventListener('change', filter);
+      if (modalEl) {
+        modalEl.addEventListener('click', (event) => {
+          if (event.target.id === 'modal') closeModal();
+        });
+      }
+      if (compareModalEl) {
+        compareModalEl.addEventListener('click', (event) => {
+          if (event.target.id === 'compareModal') closeCompareModal();
+        });
+      }
+
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) {
+          setMobileFilterState(false);
+        }
+        setSidebarDrawerState(sidebarDrawerOpen);
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          closeSidebarDrawer();
+        }
+      });
+
+      applyLanguageUI();
+      applyFontSize();
+      applyTheme();
+      setSidebarDrawerState(false);
+      loadSchoolData();
+      loadForumPosts();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializePage);
+    } else {
+      initializePage();
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(reg => reg.update()).catch(() => {});
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: hk-school-finder
+    env: node
+    plan: free
+    autoDeploy: true
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 18

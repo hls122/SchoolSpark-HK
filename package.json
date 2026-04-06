@@ -1,0 +1,27 @@
+{
+  "name": "hk-school-finder-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SchoolSpark HK mobile app with Capacitor",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "node server.js",
+    "build:web": "node scripts/build-web.mjs",
+    "cap:sync": "npm run build:web ; npx cap sync",
+    "cap:android": "npm run build:web ; npx cap open android",
+    "cap:ios": "npm run build:web ; npx cap open ios",
+    "one-click:android": "powershell -ExecutionPolicy Bypass -File scripts/one-click-android.ps1 -Mode open",
+    "one-click:apk": "powershell -ExecutionPolicy Bypass -File scripts/one-click-android.ps1 -Mode apk"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.6.0",
+    "@capacitor/core": "^7.4.1",
+    "@capacitor/ios": "^7.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.1"
+  }
+}

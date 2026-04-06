@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>SchoolSpark HK - Forum</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <style>
+    body {
+      font-family: "Segoe UI", Inter, Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      margin: 0;
+    }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+      color: #fff;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.7rem 1rem;
+      border-radius: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .nav-btn-primary {
+      background: #fff;
+      color: #0f172a;
+    }
+    .nav-btn-secondary {
+      border: 1px solid rgba(255,255,255,0.28);
+      color: #fff;
+    }
+    .filter-btn {
+      border: 1px solid #cbd5e1;
+      border-radius: 9999px;
+      background: #fff;
+      color: #334155;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+    .filter-btn.is-active {
+      background: #0f172a;
+      border-color: #0f172a;
+      color: #fff;
+    }
+    .post-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      background: #fff;
+      padding: 1rem;
+    }
+    .post-topic {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .post-meta {
+      margin-top: 0.35rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      align-items: center;
+      color: #64748b;
+      font-size: 0.78rem;
+    }
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.22rem 0.55rem;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+    .role-parent { background: #dbeafe; color: #1d4ed8; }
+    .role-student { background: #ede9fe; color: #7c3aed; }
+    .post-message {
+      margin-top: 0.75rem;
+      color: #334155;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .reply-list {
+      margin-top: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+    .reply-card {
+      margin-left: 0.5rem;
+      padding: 0.8rem 0.9rem;
+      border-left: 3px solid #93c5fd;
+      border-radius: 0.85rem;
+      background: #f8fbff;
+    }
+    .reply-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    .reply-message {
+      margin-top: 0.45rem;
+      color: #334155;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    .reply-toggle-btn {
+      border: 1px solid #cbd5e1;
+      border-radius: 9999px;
+      background: #fff;
+      color: #334155;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+    .reply-form {
+      margin-top: 0.75rem;
+    }
+    .reply-form.hidden {
+      display: none;
+    }
+    .reply-textarea {
+      width: 100%;
+      min-height: 92px;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.9rem;
+      padding: 0.75rem 0.85rem;
+      resize: vertical;
+    }
+    .empty-state {
+      border: 1px dashed #cbd5e1;
+      border-radius: 1rem;
+      background: #f8fafc;
+      padding: 2rem;
+      text-align: center;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-5 py-8 md:py-10">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div>
+          <p id="eyebrow" class="uppercase tracking-widest text-xs text-blue-100 font-semibold mb-2">Community forum</p>
+          <h1 id="pageTitle" class="text-3xl font-bold">Parent & student forum</h1>
+          <p id="pageIntro" class="text-blue-100 mt-3 max-w-2xl">Use this dedicated page to ask questions, share experience, and exchange school tips.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <a href="index.html" id="backBtn" class="nav-btn nav-btn-primary">← Back to finder</a>
+          <a href="compare.html" id="compareBtn" class="nav-btn nav-btn-secondary">⚖️ Compare page</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-5 py-6 md:py-8 space-y-4">
+    <section class="panel p-4 md:p-5">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <div class="flex flex-wrap gap-2">
+          <button id="filterAll" type="button" class="filter-btn is-active">All posts</button>
+          <button id="filterParent" type="button" class="filter-btn">Parents</button>
+          <button id="filterStudent" type="button" class="filter-btn">Students</button>
+        </div>
+        <p id="statusText" class="text-sm text-gray-500">Loading forum posts...</p>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <div class="xl:col-span-2 panel p-4 md:p-5">
+        <div id="postsPanel" class="space-y-3"></div>
+      </div>
+
+      <div class="panel p-4 md:p-5 space-y-4">
+        <div>
+          <label id="roleLabel" class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2 block">I am a</label>
+          <select id="roleInput" class="w-full border border-slate-300 rounded-xl px-3 py-3">
+            <option value="parent">Parent</option>
+            <option value="student">Student</option>
+          </select>
+        </div>
+        <div>
+          <label id="nameLabel" class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2 block">Display name</label>
+          <input id="nameInput" type="text" class="w-full border border-slate-300 rounded-xl px-3 py-3" placeholder="e.g. Holly / Parent from Kowloon">
+        </div>
+        <div>
+          <label id="topicLabel" class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2 block">Topic</label>
+          <input id="topicInput" type="text" class="w-full border border-slate-300 rounded-xl px-3 py-3" placeholder="What would you like to ask or share?">
+        </div>
+        <div>
+          <label id="messageLabel" class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2 block">Message</label>
+          <textarea id="messageInput" rows="5" class="w-full border border-slate-300 rounded-xl px-3 py-3" placeholder="Share your question, advice, or experience here."></textarea>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <button id="postBtn" type="button" class="w-full px-4 py-3 rounded-xl bg-blue-700 text-white text-sm font-semibold">Post message</button>
+          <button id="clearBtn" type="button" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold">Clear</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const currentLang = localStorage.getItem('hk-school-language') === 'zh' ? 'zh' : 'en';
+    const forumApiUrl = '/api/forum';
+    const text = {
+      en: {
+        eyebrow: 'Community forum',
+        pageTitle: 'Parent & student forum',
+        pageIntro: 'Use this dedicated page to ask questions, share experience, and exchange school tips.',
+        backBtn: '← Back to finder',
+        compareBtn: '⚖️ Compare page',
+        all: 'All posts',
+        parents: 'Parents',
+        students: 'Students',
+        roleLabel: 'I am a',
+        roleParent: 'Parent',
+        roleStudent: 'Student',
+        nameLabel: 'Display name',
+        topicLabel: 'Topic',
+        messageLabel: 'Message',
+        namePlaceholder: 'e.g. Holly / Parent from Kowloon',
+        topicPlaceholder: 'What would you like to ask or share?',
+        messagePlaceholder: 'Share your question, advice, or experience here.',
+        postBtn: 'Post message',
+        clearBtn: 'Clear',
+        loading: 'Loading forum posts...',
+        online: 'Forum connected. New posts can be shared with other users.',
+        offline: 'Forum is using local fallback right now.',
+        posting: 'Posting your message...',
+        posted: 'Message posted successfully.',
+        savedLocal: 'Message saved on this device.',
+        validation: 'Please enter both a topic and a message.',
+        noPostsTitle: 'No forum posts yet',
+        noPostsText: 'Be the first to start the discussion.',
+        guestParent: 'Parent guest',
+        guestStudent: 'Student guest',
+        reply: 'Reply',
+        replies: 'Replies',
+        replyPlaceholder: 'Write a helpful reply here...',
+        replyPost: 'Send reply',
+        replyCancel: 'Cancel',
+        replyPosting: 'Posting your reply...',
+        replyPosted: 'Reply posted successfully.',
+        replySavedLocal: 'Reply saved on this device.',
+        replyValidation: 'Please enter a reply before sending.'
+      },
+      zh: {
+        eyebrow: '交流專頁',
+        pageTitle: '家長及學生交流區',
+        pageIntro: '在這個獨立頁面發問、分享經驗及交流選校建議。',
+        backBtn: '← 返回搜尋頁',
+        compareBtn: '⚖️ 比較頁',
+        all: '全部帖子',
+        parents: '家長',
+        students: '學生',
+        roleLabel: '我的身份',
+        roleParent: '家長',
+        roleStudent: '學生',
+        nameLabel: '顯示名稱',
+        topicLabel: '主題',
+        messageLabel: '內容',
+        namePlaceholder: '例如：Holly／九龍區家長',
+        topicPlaceholder: '你想發問或分享甚麼？',
+        messagePlaceholder: '請輸入你的問題、建議或經驗。',
+        postBtn: '發佈帖子',
+        clearBtn: '清除',
+        loading: '正在載入論壇帖子...',
+        online: '論壇已連線，新帖子可與其他使用者分享。',
+        offline: '目前正使用本地後備模式。',
+        posting: '正在發佈帖子...',
+        posted: '帖子已成功發佈。',
+        savedLocal: '帖子已保存在此裝置。',
+        validation: '請同時輸入主題及內容。',
+        noPostsTitle: '暫時未有帖子',
+        noPostsText: '歡迎成為第一位發起討論的人。',
+        guestParent: '家長訪客',
+        guestStudent: '學生訪客',
+        reply: '回覆',
+        replies: '回覆',
+        replyPlaceholder: '請輸入你的回覆內容...',
+        replyPost: '送出回覆',
+        replyCancel: '取消',
+        replyPosting: '正在發佈回覆...',
+        replyPosted: '回覆已成功發佈。',
+        replySavedLocal: '回覆已保存在此裝置。',
+        replyValidation: '請先輸入回覆內容。'
+      }
+    };
+
+    let posts = [];
+    let roleFilter = 'all';
+    let openReplyId = '';
+
+    function t(key) {
+      return (text[currentLang] && text[currentLang][key]) || text.en[key] || key;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function savePosts() {
+      localStorage.setItem('hk-school-forum-posts', JSON.stringify((posts || []).slice(0, 80)));
+    }
+
+    function roleText(role) {
+      return role === 'student' ? t('roleStudent') : t('roleParent');
+    }
+
+    function getReplies(post) {
+      return Array.isArray(post?.replies) ? post.replies : [];
+    }
+
+    function formatTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toLocaleString(currentLang === 'zh' ? 'zh-HK' : 'en-HK', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function renderFilterButtons() {
+      const map = {
+        all: document.getElementById('filterAll'),
+        parent: document.getElementById('filterParent'),
+        student: document.getElementById('filterStudent')
+      };
+      Object.entries(map).forEach(([role, button]) => {
+        const active = roleFilter === role;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    }
+
+    function renderPosts() {
+      renderFilterButtons();
+      const panel = document.getElementById('postsPanel');
+      const filtered = (posts || []).filter((post) => roleFilter === 'all' ? true : post.role === roleFilter);
+      if (!filtered.length) {
+        panel.innerHTML = `<div class="empty-state"><h3 class="font-semibold text-slate-800 mb-2">${t('noPostsTitle')}</h3><p>${t('noPostsText')}</p></div>`;
+        return;
+      }
+      panel.innerHTML = filtered.map((post) => {
+        const name = post.name || (post.role === 'student' ? t('guestStudent') : t('guestParent'));
+        const replies = getReplies(post);
+        const replyFormVisible = openReplyId === post.id;
+        return `
+          <article class="post-card">
+            <h3 class="post-topic">${escapeHtml(post.topic)}</h3>
+            <div class="post-meta">
+              <span class="role-badge ${post.role === 'student' ? 'role-student' : 'role-parent'}">${roleText(post.role)}</span>
+              <span>${escapeHtml(name)}</span>
+              <span>•</span>
+              <span>${escapeHtml(formatTime(post.createdAt))}</span>
+            </div>
+            <p class="post-message">${escapeHtml(post.message)}</p>
+            <div class="mt-4">
+              <div class="flex items-center justify-between gap-2">
+                <div class="text-xs font-semibold text-slate-500">${t('replies')} (${replies.length})</div>
+                <button type="button" class="reply-toggle-btn" onclick="toggleReplyForm('${post.id}')">${replies.length ? `${t('reply')} (${replies.length})` : t('reply')}</button>
+              </div>
+              ${replies.length ? `
+                <div class="reply-list">
+                  ${replies.map((reply) => `
+                    <div class="reply-card">
+                      <div class="reply-meta">
+                        <span class="role-badge ${reply.role === 'student' ? 'role-student' : 'role-parent'}">${roleText(reply.role)}</span>
+                        <span>${escapeHtml(reply.name || (reply.role === 'student' ? t('guestStudent') : t('guestParent')))}</span>
+                        <span>•</span>
+                        <span>${escapeHtml(formatTime(reply.createdAt))}</span>
+                      </div>
+                      <div class="reply-message">${escapeHtml(reply.message)}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+              <div id="replyForm-${post.id}" class="reply-form${replyFormVisible ? '' : ' hidden'}">
+                <textarea id="replyInput-${post.id}" class="reply-textarea" placeholder="${t('replyPlaceholder')}"></textarea>
+                <div class="flex flex-col sm:flex-row gap-2 mt-2">
+                  <button type="button" class="px-4 py-2.5 rounded-xl bg-blue-700 text-white text-sm font-semibold" onclick="submitReply('${post.id}')">${t('replyPost')}</button>
+                  <button type="button" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold" onclick="cancelReply('${post.id}')">${t('replyCancel')}</button>
+                </div>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function toggleReplyForm(postId) {
+      openReplyId = openReplyId === postId ? '' : postId;
+      renderPosts();
+      if (openReplyId) {
+        window.setTimeout(() => {
+          const input = document.getElementById(`replyInput-${postId}`);
+          if (input) input.focus();
+        }, 0);
+      }
+    }
+
+    function cancelReply(postId) {
+      const input = document.getElementById(`replyInput-${postId}`);
+      if (input) input.value = '';
+      openReplyId = '';
+      renderPosts();
+    }
+
+    async function submitReply(postId) {
+      const input = document.getElementById(`replyInput-${postId}`);
+      const message = input?.value.trim() || '';
+      const role = document.getElementById('roleInput').value === 'student' ? 'student' : 'parent';
+      const rawName = document.getElementById('nameInput').value.trim();
+      const name = rawName || (role === 'student' ? t('guestStudent') : t('guestParent'));
+
+      if (!message) {
+        document.getElementById('statusText').textContent = t('replyValidation');
+        return;
+      }
+
+      document.getElementById('statusText').textContent = t('replyPosting');
+
+      try {
+        const response = await fetch(forumApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ parentId: postId, role, name, message })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Unable to reply');
+        posts = Array.isArray(data.posts) ? data.posts : posts;
+        savePosts();
+        openReplyId = '';
+        renderPosts();
+        document.getElementById('statusText').textContent = t('replyPosted');
+      } catch {
+        const targetPost = posts.find((post) => post.id === postId);
+        if (targetPost) {
+          targetPost.replies = [{
+            id: `local-reply-${Date.now()}`,
+            role,
+            name,
+            message,
+            createdAt: new Date().toISOString()
+          }, ...getReplies(targetPost)].slice(0, 50);
+        }
+        savePosts();
+        openReplyId = '';
+        renderPosts();
+        document.getElementById('statusText').textContent = t('replySavedLocal');
+      }
+    }
+
+    function applyText() {
+      document.documentElement.lang = currentLang === 'zh' ? 'zh-Hant' : 'en';
+      document.title = t('pageTitle');
+      document.getElementById('eyebrow').textContent = t('eyebrow');
+      document.getElementById('pageTitle').textContent = t('pageTitle');
+      document.getElementById('pageIntro').textContent = t('pageIntro');
+      document.getElementById('backBtn').textContent = t('backBtn');
+      document.getElementById('compareBtn').textContent = t('compareBtn');
+      document.getElementById('filterAll').textContent = t('all');
+      document.getElementById('filterParent').textContent = t('parents');
+      document.getElementById('filterStudent').textContent = t('students');
+      document.getElementById('roleLabel').textContent = t('roleLabel');
+      document.getElementById('nameLabel').textContent = t('nameLabel');
+      document.getElementById('topicLabel').textContent = t('topicLabel');
+      document.getElementById('messageLabel').textContent = t('messageLabel');
+      document.getElementById('postBtn').textContent = t('postBtn');
+      document.getElementById('clearBtn').textContent = t('clearBtn');
+      document.getElementById('nameInput').placeholder = t('namePlaceholder');
+      document.getElementById('topicInput').placeholder = t('topicPlaceholder');
+      document.getElementById('messageInput').placeholder = t('messagePlaceholder');
+      const roleInput = document.getElementById('roleInput');
+      roleInput.options[0].text = t('roleParent');
+      roleInput.options[1].text = t('roleStudent');
+      document.getElementById('statusText').textContent = t('loading');
+    }
+
+    function clearComposer(resetStatus = true) {
+      document.getElementById('roleInput').value = 'parent';
+      document.getElementById('nameInput').value = '';
+      document.getElementById('topicInput').value = '';
+      document.getElementById('messageInput').value = '';
+      if (resetStatus) document.getElementById('statusText').textContent = t('online');
+    }
+
+    async function loadPosts() {
+      applyText();
+      try {
+        posts = JSON.parse(localStorage.getItem('hk-school-forum-posts') || '[]');
+        posts = Array.isArray(posts) ? posts : [];
+      } catch {
+        posts = [];
+      }
+
+      if (posts.length) {
+        renderPosts();
+      }
+
+      const sources = [forumApiUrl, 'forum-posts.json'];
+      for (const source of sources) {
+        try {
+          const response = await fetch(source, { cache: 'no-store' });
+          if (!response.ok) continue;
+          const data = await response.json();
+          const incomingPosts = Array.isArray(data) ? data : data.posts;
+          if (Array.isArray(incomingPosts) && incomingPosts.length) {
+            posts = incomingPosts;
+            savePosts();
+            renderPosts();
+            document.getElementById('statusText').textContent = source === forumApiUrl ? t('online') : t('offline');
+            return;
+          }
+        } catch {
+          // Try the next source.
+        }
+      }
+
+      renderPosts();
+      document.getElementById('statusText').textContent = t('offline');
+    }
+
+    async function submitPost() {
+      const role = document.getElementById('roleInput').value === 'student' ? 'student' : 'parent';
+      const rawName = document.getElementById('nameInput').value.trim();
+      const name = rawName || (role === 'student' ? t('guestStudent') : t('guestParent'));
+      const topic = document.getElementById('topicInput').value.trim();
+      const message = document.getElementById('messageInput').value.trim();
+
+      if (!topic || !message) {
+        document.getElementById('statusText').textContent = t('validation');
+        return;
+      }
+
+      document.getElementById('statusText').textContent = t('posting');
+
+      try {
+        const response = await fetch(forumApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role, name, topic, message })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Unable to post');
+        posts = Array.isArray(data.posts) ? data.posts : [data.post, ...posts];
+        savePosts();
+        renderPosts();
+        clearComposer(false);
+        document.getElementById('statusText').textContent = t('posted');
+      } catch {
+        posts = [{ id: `local-${Date.now()}`, role, name, topic, message, createdAt: new Date().toISOString() }, ...posts].slice(0, 80);
+        savePosts();
+        renderPosts();
+        clearComposer(false);
+        document.getElementById('statusText').textContent = t('savedLocal');
+      }
+    }
+
+    document.getElementById('filterAll').addEventListener('click', () => { roleFilter = 'all'; renderPosts(); });
+    document.getElementById('filterParent').addEventListener('click', () => { roleFilter = 'parent'; renderPosts(); });
+    document.getElementById('filterStudent').addEventListener('click', () => { roleFilter = 'student'; renderPosts(); });
+    document.getElementById('clearBtn').addEventListener('click', () => clearComposer(true));
+    document.getElementById('postBtn').addEventListener('click', submitPost);
+
+    loadPosts();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(reg => reg.update()).catch(() => {});
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "1775401283426-9388x9",
+    "role": "parent",
+    "name": "Forum host",
+    "topic": "Welcome everyone",
+    "message": "Feel free to ask about school visits, transport, applications, or student life.",
+    "createdAt": "2026-04-05T15:01:23.426Z",
+    "replies": []
+  },
+  {
+    "id": "welcome-parent",
+    "role": "parent",
+    "name": "Parent guide",
+    "topic": "Welcome to the school forum",
+    "message": "Ask about school visits, commute, learning support, or application tips here.",
+    "createdAt": "2026-04-05T09:00:00.000Z",
+    "replies": [
+      {
+        "id": "reply-1775402567285-kk29pr",
+        "role": "student",
+        "name": "Student helper",
+        "message": "You can also compare a few schools first and then ask parents here about transport and campus life.",
+        "createdAt": "2026-04-05T15:22:47.285Z"
+      }
+    ]
+  },
+  {
+    "id": "welcome-student",
+    "role": "student",
+    "name": "Student voice",
+    "topic": "What makes a school feel welcoming?",
+    "message": "Share what information helped you understand school life and activities.",
+    "createdAt": "2026-04-05T10:30:00.000Z",
+    "replies": []
+  }
+]

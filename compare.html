@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>SchoolSpark HK - Compare</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", Inter, Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      margin: 0;
+    }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+      color: #fff;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.7rem 1rem;
+      border-radius: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .nav-btn-primary {
+      background: #fff;
+      color: #0f172a;
+    }
+    .nav-btn-secondary {
+      border: 1px solid rgba(255,255,255,0.28);
+      color: #fff;
+    }
+    .summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.7rem;
+      border-radius: 9999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      max-height: 70vh;
+      background: #fff;
+    }
+    table {
+      width: 100%;
+      min-width: 860px;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    th, td {
+      padding: 0.85rem 0.95rem;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+      text-align: left;
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #eff6ff;
+      z-index: 2;
+    }
+    .row-label {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      width: 180px;
+      background: #fff;
+      color: #475569;
+      font-weight: 800;
+    }
+    tbody tr:nth-child(even) td,
+    tbody tr:nth-child(even) .row-label {
+      background: #f8fafc;
+    }
+    .school-head {
+      min-width: 220px;
+    }
+    .school-name {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .school-sub {
+      margin-top: 0.2rem;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    .toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+    .toggle-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.55rem 0.8rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 9999px;
+      background: #fff;
+      color: #334155;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.65rem 0.95rem;
+      border-radius: 0.8rem;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #334155;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+    .action-btn-primary {
+      background: #0f172a;
+      border-color: #0f172a;
+      color: #fff;
+    }
+    .diff-row td,
+    .diff-row .row-label {
+      background: #fff7ed !important;
+    }
+    .hidden { display: none; }
+    @media (max-width: 768px) {
+      table { min-width: 700px; }
+      th, td { padding: 0.75rem 0.8rem; font-size: 0.82rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-5 py-8 md:py-10">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div>
+          <p id="eyebrow" class="uppercase tracking-widest text-xs text-blue-100 font-semibold mb-2">Dedicated compare page</p>
+          <h1 id="pageTitle" class="text-3xl font-bold">Compare selected schools</h1>
+          <p id="pageIntro" class="text-blue-100 mt-3 max-w-2xl">Review up to four schools side by side on a dedicated page.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <a href="index.html" id="backBtn" class="nav-btn nav-btn-primary">← Back to finder</a>
+          <a href="forum.html" id="forumBtn" class="nav-btn nav-btn-secondary">💬 Forum page</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-5 py-6 md:py-8 space-y-4">
+    <section class="panel p-4 md:p-5">
+      <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+        <div class="flex flex-wrap gap-2 items-center">
+          <span id="selectionCount" class="summary-chip">0 selected</span>
+          <span id="tipText" class="text-sm text-gray-600">Add schools from the main page to compare them here.</span>
+        </div>
+        <div class="toolbar-actions">
+          <label class="toggle-chip">
+            <input id="highlightToggle" type="checkbox">
+            <span id="highlightLabel">Highlight differences</span>
+          </label>
+          <button id="shareBtn" type="button" class="action-btn">🟢 Share via WhatsApp</button>
+          <button id="exportBtn" type="button" class="action-btn action-btn-primary">📄 Export PDF</button>
+          <button id="clearBtn" type="button" class="px-4 py-2 rounded-lg border border-rose-300 bg-rose-50 text-rose-700 text-sm font-semibold">Clear selection</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="emptyState" class="panel p-8 text-center">
+      <h2 id="emptyTitle" class="text-xl font-semibold text-slate-900 mb-2">No schools selected yet</h2>
+      <p id="emptyText" class="text-gray-600">Go back to the main page and choose at least two schools with the Compare button.</p>
+    </section>
+
+    <section id="compareContent" class="panel p-4 md:p-5 hidden">
+      <div id="selectedChips" class="flex flex-wrap gap-2 mb-4"></div>
+      <div class="table-wrap">
+        <table>
+          <thead id="compareHead"></thead>
+          <tbody id="compareBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const currentLang = localStorage.getItem('hk-school-language') === 'zh' ? 'zh' : 'en';
+    const labels = {
+      en: {
+        eyebrow: 'Dedicated compare page',
+        pageTitle: 'Compare selected schools',
+        pageIntro: 'Review up to four schools side by side on a dedicated page.',
+        backBtn: '← Back to finder',
+        forumBtn: '💬 Forum page',
+        clearBtn: 'Clear selection',
+        tipText: 'Add schools from the main page to compare them here.',
+        emptyTitle: 'No schools selected yet',
+        emptyText: 'Go back to the main page and choose at least two schools with the Compare button.',
+        selectionCount: '{count} selected',
+        criteria: 'Criteria',
+        district: 'District',
+        level: 'School level',
+        type: 'School type',
+        finance: 'Finance type',
+        curriculum: 'Curriculum',
+        language: 'Language of instruction',
+        religion: 'Religion',
+        fees: 'Fee level',
+        session: 'Session',
+        gender: 'Student gender',
+        phone: 'Telephone',
+        website: 'Website',
+        address: 'Address',
+        notListed: 'Not listed',
+        checkWebsite: 'Please check the school website',
+        localCurriculum: 'Hong Kong local curriculum',
+        internationalCurriculum: 'International / school-based curriculum',
+        esfCurriculum: 'ESF / international curriculum',
+        mainlyEnglish: 'Mainly English',
+        schoolBasedFees: 'School-based fees, see website',
+        publicFunding: 'Public-funded / details not listed',
+        highlightDifferences: 'Highlight differences',
+        exportPdf: 'Export PDF',
+        shareWhatsapp: 'Share via WhatsApp',
+        pdfReady: 'Comparison PDF exported.',
+        pdfUnavailable: 'PDF export is not available right now.',
+        shareReady: 'Opening WhatsApp share...',
+        compareTooFew: 'Select at least two schools before exporting or sharing.'
+      },
+      zh: {
+        eyebrow: '獨立比較頁',
+        pageTitle: '比較所選學校',
+        pageIntro: '在獨立頁面並排查看最多四間學校的資料。',
+        backBtn: '← 返回搜尋頁',
+        forumBtn: '💬 交流頁',
+        clearBtn: '清除選擇',
+        tipText: '可先在主頁加入學校，再在此比較。',
+        emptyTitle: '尚未選擇學校',
+        emptyText: '請先返回主頁，使用「比較」按鈕選擇至少兩間學校。',
+        selectionCount: '已選 {count} 間',
+        criteria: '比較項目',
+        district: '分區',
+        level: '學校級別',
+        type: '學校類別',
+        finance: '資助種類',
+        curriculum: '課程',
+        language: '授課語言',
+        religion: '宗教',
+        fees: '收費水平',
+        session: '授課時間',
+        gender: '學生性別',
+        phone: '聯絡電話',
+        website: '網站',
+        address: '地址',
+        notListed: '未有資料',
+        checkWebsite: '請查看學校網站',
+        localCurriculum: '香港本地課程',
+        internationalCurriculum: '國際／校本課程',
+        esfCurriculum: '英基／國際課程',
+        mainlyEnglish: '以英文為主',
+        schoolBasedFees: '學費由學校自訂，請參閱網站',
+        publicFunding: '公營資助，未列明收費詳情',
+        highlightDifferences: '標示差異',
+        exportPdf: '匯出 PDF',
+        shareWhatsapp: '分享到 WhatsApp',
+        pdfReady: '比較 PDF 已匯出。',
+        pdfUnavailable: '目前未能匯出 PDF。',
+        shareReady: '正在開啟 WhatsApp 分享...',
+        compareTooFew: '請先選擇至少兩間學校再匯出或分享。'
+      }
+    };
+
+    let currentCompareSchools = [];
+    let currentCompareRows = [];
+    let highlightDifferences = false;
+
+    function t(key, values = {}) {
+      let text = (labels[currentLang] && labels[currentLang][key]) || labels.en[key] || key;
+      Object.entries(values).forEach(([name, value]) => {
+        text = text.replace(`{${name}}`, value);
+      });
+      return text;
+    }
+
+    function safeValue(value) {
+      return value && String(value).trim() ? String(value).trim() : 'N/A';
+    }
+
+    function textFor(school, enKey, zhKey) {
+      return currentLang === 'zh' ? (school[zhKey] || school[enKey] || 'N/A') : (school[enKey] || school[zhKey] || 'N/A');
+    }
+
+    function cleanAddressText(value) {
+      return safeValue(value)
+        .replace(/\([^)]*\)/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .replace(/\s+,/g, ',')
+        .trim();
+    }
+
+    function schoolLevelText(school) {
+      return currentLang === 'zh' ? safeValue(school['學校類型'] || school['SCHOOL LEVEL']) : safeValue(school['SCHOOL LEVEL']);
+    }
+
+    function schoolNameText(school) {
+      return currentLang === 'zh' ? safeValue(school['中文名稱'] || school['ENGLISH NAME']) : safeValue(school['ENGLISH NAME'] || school['中文名稱']);
+    }
+
+    function schoolSecondaryNameText(school) {
+      const englishName = safeValue(school['ENGLISH NAME']);
+      const chineseName = safeValue(school['中文名稱']);
+      if (englishName === 'N/A' || chineseName === 'N/A') return '';
+      return currentLang === 'en' ? chineseName : englishName;
+    }
+
+    function getSchoolId(school) {
+      return [safeValue(school['ENGLISH NAME']), safeValue(school.DISTRICT), safeValue(school['SCHOOL LEVEL'])].join('|');
+    }
+
+    function categoryText(school) {
+      return textFor(school, 'ENGLISH CATEGORY', '中文類別');
+    }
+
+    function financeTypeText(school) {
+      return textFor(school, 'FINANCE TYPE', '資助種類');
+    }
+
+    function phoneText(school) {
+      return currentLang === 'zh' ? safeValue(school['聯絡電話'] || school.TELEPHONE) : safeValue(school.TELEPHONE);
+    }
+
+    function curriculumText(school) {
+      const category = safeValue(school['ENGLISH CATEGORY']);
+      const finance = safeValue(school['FINANCE TYPE']);
+      if (/international schools/i.test(category)) return t('internationalCurriculum');
+      if (/english schools foundation/i.test(category) || /ENGLISH SCHOOLS FOUNDATION/i.test(finance)) return t('esfCurriculum');
+      return t('localCurriculum');
+    }
+
+    function instructionText(school) {
+      const category = safeValue(school['ENGLISH CATEGORY']);
+      const finance = safeValue(school['FINANCE TYPE']);
+      if (/international schools/i.test(category) || /ENGLISH SCHOOLS FOUNDATION/i.test(finance)) return t('mainlyEnglish');
+      return t('checkWebsite');
+    }
+
+    function approximateFeesText(school) {
+      const category = safeValue(school['ENGLISH CATEGORY']);
+      const finance = safeValue(school['FINANCE TYPE']);
+      if (/PRIVATE|DIRECT SUBSIDY SCHEME|PRIVATE INDEPENDENT SCH SCHEME|ENGLISH SCHOOLS FOUNDATION/i.test(finance) || /international schools/i.test(category)) {
+        return t('schoolBasedFees');
+      }
+      return t('publicFunding');
+    }
+
+    function displayValue(value) {
+      if (typeof value !== 'string') return value || t('notListed');
+      const trimmed = value.trim();
+      return trimmed && !/^N(?:\/|\.)?A\.?$/i.test(trimmed) ? trimmed : t('notListed');
+    }
+
+    function plainCompareValue(value) {
+      return String(displayValue(value)).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function rowHasDifferences(values) {
+      return new Set(values.map((value) => plainCompareValue(value).toLowerCase())).size > 1;
+    }
+
+    function buildShareText() {
+      const title = `${t('pageTitle')}: ${currentCompareSchools.map((school) => schoolNameText(school)).join(' vs ')}`;
+      const lines = currentCompareRows.map((row) => `${row.label}: ${row.values.map((value) => plainCompareValue(value)).join(' | ')}`);
+      return `${title}\n\n${lines.join('\n')}\n\n${window.location.href}`;
+    }
+
+    function renderCompareTable() {
+      const selectionCount = document.getElementById('selectionCount');
+      const emptyState = document.getElementById('emptyState');
+      const compareContent = document.getElementById('compareContent');
+      const selectedChips = document.getElementById('selectedChips');
+      const compareHead = document.getElementById('compareHead');
+      const compareBody = document.getElementById('compareBody');
+      const shareBtn = document.getElementById('shareBtn');
+      const exportBtn = document.getElementById('exportBtn');
+      const clearBtn = document.getElementById('clearBtn');
+
+      if (selectionCount) {
+        selectionCount.textContent = t('selectionCount', { count: currentCompareSchools.length });
+      }
+
+      const ready = currentCompareSchools.length >= 2;
+      if (emptyState) emptyState.classList.toggle('hidden', ready);
+      if (compareContent) compareContent.classList.toggle('hidden', !ready);
+      if (shareBtn) shareBtn.disabled = !ready;
+      if (exportBtn) exportBtn.disabled = !ready;
+      if (clearBtn) clearBtn.disabled = !currentCompareSchools.length;
+
+      if (!ready) {
+        if (selectedChips) selectedChips.innerHTML = '';
+        if (compareHead) compareHead.innerHTML = '';
+        if (compareBody) compareBody.innerHTML = '';
+        return;
+      }
+
+      if (selectedChips) {
+        selectedChips.innerHTML = currentCompareSchools
+          .map((school) => `<span class="summary-chip">🏫 ${schoolNameText(school)}</span>`)
+          .join('');
+      }
+
+      if (compareHead) {
+        compareHead.innerHTML = `
+          <tr>
+            <th class="row-label">${t('criteria')}</th>
+            ${currentCompareSchools.map((school) => `
+              <th>
+                <div class="school-head">
+                  <div class="school-name">${schoolNameText(school)}</div>
+                  <div class="school-sub">${schoolSecondaryNameText(school) || categoryText(school)}</div>
+                </div>
+              </th>
+            `).join('')}
+          </tr>
+        `;
+      }
+
+      if (compareBody) {
+        compareBody.innerHTML = currentCompareRows.map((row) => {
+          const different = highlightDifferences && rowHasDifferences(row.values);
+          return `
+            <tr class="${different ? 'diff-row' : ''}">
+              <th class="row-label">${row.label}</th>
+              ${row.values.map((value) => `<td>${displayValue(value)}</td>`).join('')}
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    function shareViaWhatsApp() {
+      if (currentCompareSchools.length < 2) {
+        document.getElementById('tipText').textContent = t('compareTooFew');
+        return;
+      }
+      document.getElementById('tipText').textContent = t('shareReady');
+      window.open(`https://wa.me/?text=${encodeURIComponent(buildShareText())}`, '_blank', 'noopener');
+    }
+
+    function exportComparisonPdf() {
+      if (currentCompareSchools.length < 2) {
+        document.getElementById('tipText').textContent = t('compareTooFew');
+        return;
+      }
+
+      const jsPdfLib = window.jspdf?.jsPDF;
+      if (!jsPdfLib) {
+        document.getElementById('tipText').textContent = t('pdfUnavailable');
+        return;
+      }
+
+      const doc = new jsPdfLib({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      doc.setFontSize(18);
+      doc.text(t('pageTitle'), 40, 40);
+      doc.setFontSize(10);
+      doc.text(currentCompareSchools.map((school) => schoolNameText(school)).join(' • '), 40, 60);
+      doc.autoTable({
+        startY: 80,
+        head: [[t('criteria'), ...currentCompareSchools.map((school) => schoolNameText(school))]],
+        body: currentCompareRows.map((row) => [row.label, ...row.values.map((value) => plainCompareValue(value))]),
+        styles: { fontSize: 8.5, cellPadding: 6, overflow: 'linebreak' },
+        headStyles: { fillColor: [37, 99, 235] },
+        alternateRowStyles: { fillColor: [248, 250, 252] }
+      });
+      doc.save(`school-comparison-${new Date().toISOString().slice(0, 10)}.pdf`);
+      document.getElementById('tipText').textContent = t('pdfReady');
+    }
+
+    async function loadComparePage() {
+      document.documentElement.lang = currentLang === 'zh' ? 'zh-Hant' : 'en';
+      document.title = t('pageTitle');
+      document.getElementById('eyebrow').textContent = t('eyebrow');
+      document.getElementById('pageTitle').textContent = t('pageTitle');
+      document.getElementById('pageIntro').textContent = t('pageIntro');
+      document.getElementById('backBtn').textContent = t('backBtn');
+      document.getElementById('forumBtn').textContent = t('forumBtn');
+      document.getElementById('clearBtn').textContent = t('clearBtn');
+      document.getElementById('highlightLabel').textContent = t('highlightDifferences');
+      document.getElementById('shareBtn').textContent = `🟢 ${t('shareWhatsapp')}`;
+      document.getElementById('exportBtn').textContent = `📄 ${t('exportPdf')}`;
+      document.getElementById('tipText').textContent = t('tipText');
+      document.getElementById('emptyTitle').textContent = t('emptyTitle');
+      document.getElementById('emptyText').textContent = t('emptyText');
+
+      let compareIds = [];
+      try {
+        compareIds = JSON.parse(localStorage.getItem('hk-school-compare') || '[]');
+        compareIds = Array.isArray(compareIds) ? compareIds.slice(0, 4) : [];
+      } catch {
+        compareIds = [];
+      }
+
+      currentCompareSchools = [];
+      currentCompareRows = [];
+      renderCompareTable();
+
+      if (compareIds.length < 2) {
+        return;
+      }
+
+      const dataSources = ['SCH_LOC_EDB.json', '/api/schools'];
+      let records = [];
+      for (const source of dataSources) {
+        try {
+          const response = await fetch(source, { cache: 'no-store' });
+          if (!response.ok) continue;
+          const data = await response.json();
+          if (Array.isArray(data) && data.length) {
+            records = data;
+            break;
+          }
+        } catch {
+          // Try the next source.
+        }
+      }
+
+      const compareSchools = compareIds
+        .map((id) => records.find((school) => getSchoolId(school) === id))
+        .filter(Boolean);
+
+      if (compareSchools.length < 2) {
+        return;
+      }
+
+      currentCompareSchools = compareSchools;
+      currentCompareRows = [
+        { label: t('district'), values: compareSchools.map((school) => textFor(school, 'DISTRICT', '分區')) },
+        { label: t('level'), values: compareSchools.map((school) => schoolLevelText(school)) },
+        { label: t('type'), values: compareSchools.map((school) => categoryText(school)) },
+        { label: t('finance'), values: compareSchools.map((school) => financeTypeText(school)) },
+        { label: t('curriculum'), values: compareSchools.map((school) => curriculumText(school)) },
+        { label: t('language'), values: compareSchools.map((school) => instructionText(school)) },
+        { label: t('religion'), values: compareSchools.map((school) => textFor(school, 'RELIGION', '宗教')) },
+        { label: t('fees'), values: compareSchools.map((school) => approximateFeesText(school)) },
+        { label: t('session'), values: compareSchools.map((school) => textFor(school, 'SESSION', '學校授課時間')) },
+        { label: t('gender'), values: compareSchools.map((school) => textFor(school, 'STUDENTS GENDER', '就讀學生性別')) },
+        { label: t('phone'), values: compareSchools.map((school) => phoneText(school)) },
+        { label: t('website'), values: compareSchools.map((school) => {
+            const website = safeValue(school.WEBSITE);
+            return website !== 'N/A' ? `<a href="${website}" target="_blank" rel="noopener" class="text-blue-600 underline break-all">${website}</a>` : t('notListed');
+          })
+        },
+        { label: t('address'), values: compareSchools.map((school) => cleanAddressText(textFor(school, 'ENGLISH ADDRESS', '中文地址'))) }
+      ];
+
+      renderCompareTable();
+    }
+
+    document.getElementById('highlightToggle').addEventListener('change', (event) => {
+      highlightDifferences = !!event.target.checked;
+      renderCompareTable();
+    });
+    document.getElementById('shareBtn').addEventListener('click', shareViaWhatsApp);
+    document.getElementById('exportBtn').addEventListener('click', exportComparisonPdf);
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      localStorage.setItem('hk-school-compare', '[]');
+      loadComparePage();
+    });
+
+    loadComparePage();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(reg => reg.update()).catch(() => {});
+    }
+  </script>
+</body>
+</html>
